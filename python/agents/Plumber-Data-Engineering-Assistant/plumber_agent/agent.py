@@ -1,10 +1,10 @@
 # # Import root_agents from each subagent
-from .sub_agents.dataflow_agent.agent import root_agent as dataflow_agent
-from .sub_agents.dataproc_agent.agent import root_agent as dataproc_agent
-from .sub_agents.dataproc_template_agent.agent import root_agent as dataproc_template_agent
-from .sub_agents.dbt_agent.agent import root_agent as dbt_agent
-from .sub_agents.github_agent.agent import root_agent as github_agent
-from .sub_agents.monitoring_agent.agent import root_agent as monitoring_agent
+from agents.dataflow_agent.agent import root_agent as dataflow_agent
+from agents.dataproc_agent.agent import root_agent as dataproc_agent
+from agents.dataproc_template_agent.agent import root_agent as dataproc_template_agent
+from agents.dbt_agent.agent import root_agent as dbt_agent
+from agents.github_agent.agent import root_agent as github_agent
+from agents.monitoring_agent.agent import root_agent as monitoring_agent
 
 from google.adk.agents import Agent
 from .prompts import AGENT_INSTRUCTIONS

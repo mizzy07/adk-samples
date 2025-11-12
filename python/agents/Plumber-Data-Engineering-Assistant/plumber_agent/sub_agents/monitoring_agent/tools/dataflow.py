@@ -1,15 +1,14 @@
-import logging
 from datetime import datetime, timedelta
-
 from google.cloud import logging_v2
+
+import logging
 
 logger = logging.getLogger("plumber-agent")
 
 
-def get_dataflow_job_logs_with_id(
-    project_id: str, job_id: str, _limit: int = 10
-) -> dict:
-    """
+def get_dataflow_job_logs_with_id(project_id: str, job_id: str, _limit: int = 10) -> dict:
+
+    """ 
     Fetches log entries for a specific Dataflow job using its ID from Google Cloud Logging.
 
     This function retrieves log entries from Google Cloud Logging that are associated
@@ -36,27 +35,26 @@ def get_dataflow_job_logs_with_id(
                 details about the error that occurred.
 
     Note: [IMPORTANT]
-        - Don't call this tool till u have job_id
+        - Don't call this tool till u have job_id 
             - example job_id : 2025-07-11_02_51_43-12657112666808971216
-    """
+     """
 
-    print(
-        "datetime.now() - timedelta(days=90)",
-        (datetime.now() - timedelta(days=90)).isoformat(),
-    )
+    print("datetime.now() - timedelta(days=90)", (datetime.now() - timedelta(days=90)).isoformat())
 
     collected_logs = []
     filter_string = (
         f'resource.type="dataflow_step" AND '
-        f'resource.labels.job_id="{job_id}" AND '
-        f'timestamp >= "{(datetime.now() - timedelta(days=90)).isoformat()}Z"'  # there is some lookback time for filter you not able to fetch logs before that to get those you have to use timestamp
+        f'resource.labels.job_id="{job_id}" AND ' 
+        f'timestamp >= "{(datetime.now() - timedelta(days=90)).isoformat()}Z"' # there is some lookback time for filter you not able to fetch logs before that to get those you have to use timestamp
     )
 
     try:
         client = logging_v2.Client(project=project_id)
         project_path = f"projects/{project_id}"
         iterator = client.list_entries(
-            resource_names=[project_path], filter_=filter_string, max_results=_limit
+            resource_names=[project_path],
+            filter_=filter_string,
+            max_results=_limit 
         )
 
         print("iterator =====> ", iterator)
@@ -66,19 +64,13 @@ def get_dataflow_job_logs_with_id(
             log_count += 1
             print(f"Entry - {log_count} \n", entry)
             collected_logs.append(f"Entry {log_count}: {str(entry)}")
+            
 
-        return {
-            "status": "success",
-            "report": f"Fetched log entries of Job ID: {job_id}:\n"
-            + "\n".join(collected_logs),
-        }
+        return {"status": "success", "report": f"Fetched log entries of Job ID: {job_id}:\n" + "\n".join(collected_logs)}
 
     except StopIteration:
         return {"status": "success", "report": "No job log entry found with given ID."}
     except Exception as e:
         print(f"An error occurred: {e}")
         logger.error(f"An error occurred: {e}")
-        return {
-            "status": "error",
-            "message": f"Failed to get job with given id and error: {e}",
-        }
+        return {"status": "error", "message": f"Failed to get job with given id and error: {e}"}

@@ -1,23 +1,20 @@
-import logging
+import os
+import google.adk.events  as types
+from google.cloud import monitoring_v3
+from google.protobuf import timestamp_pb2
+from google.protobuf import duration_pb2
 import time
 from datetime import datetime, timedelta
-from typing import Optional
+from google.cloud import logging_v2
+from ..prompt import SEVERITIES_LIST
 
-from google.cloud import logging_v2, monitoring_v3
-from google.protobuf import duration_pb2, timestamp_pb2
-
-from ..prompt import (
-    LATEST_ERROR_PROMT,
-    LATEST_LOGS_PROMT,
-    SEVERITIES_LIST,
-    TIME_RANGE_LOGS_PROMT,
-)
+import logging
 
 logger = logging.getLogger("plumber-agent")
 
-
 def get_cpu_utilization(project_id: str) -> dict:
-    """
+    
+    """ 
     Connects to Google Cloud Monitoring and retrieves CPU utilization
     for all VM instances in the specified project over the last 5 minutes.
 
@@ -41,7 +38,7 @@ def get_cpu_utilization(project_id: str) -> dict:
                 providing details about the specific error encountered.
 
     Note: [IMPORTANT]
-        - Call only when user ask's about CPU utilization
+        - Call only when user ask's about CPU utilization 
     """
     project_path = f"projects/{project_id}"
 
@@ -58,7 +55,8 @@ def get_cpu_utilization(project_id: str) -> dict:
     start_timestamp.nanos = int((now - int(now)) * 10**9)
 
     interval = monitoring_v3.TimeInterval(
-        end_time=end_timestamp, start_time=start_timestamp
+        end_time=end_timestamp,
+        start_time=start_timestamp
     )
 
     # Define the metric filter
@@ -101,63 +99,23 @@ def get_cpu_utilization(project_id: str) -> dict:
             for point in series.points:
                 value = point.value.double_value
                 timestamp = point.interval.end_time
-                cpu_data_report.append(
-                    f"    Timestamp: {timestamp}, Value: {value:.2f}%"
-                )
-
+                cpu_data_report.append(f"    Timestamp: {timestamp}, Value: {value:.2f}%")
+        
         if not found_data:
-            print(
-                "No CPU utilization data found for the specified project and time range."
-            )
-            return {
-                "status": "success",
-                "report": "No CPU utilization data found for the specified project and time range.",
-            }
+            print("No CPU utilization data found for the specified project and time range.")
+            return {"status": "success", "report": "No CPU utilization data found for the specified project and time range."}
         else:
             print("Successfully fetched CPU utilization data.")
-            return {
-                "status": "success",
-                "report": "CPU Utilization Data:\n" + "\n".join(cpu_data_report),
-            }
+            return {"status": "success", "report": "CPU Utilization Data:\n" + "\n".join(cpu_data_report)}
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}")
         print(f"An error occurred: {e}")
         return {"status": "error", "message": f"Failed to get CPU utilization: {e}"}
+    
 
+def get_latest_resource_based_logs(project_id: str, severity: str = "", resource: str = "", _limit: int = 10) -> dict:
 
-def get_latest_error(project_id: str) -> dict:
-    f""" {LATEST_ERROR_PROMT} """
-
-    try:
-        client = logging_v2.Client(project=project_id)
-        project_path = f"projects/{project_id}"
-        latest_errors_iterator = client.list_entries(
-            resource_names=[project_path],
-            order_by="timestamp desc",
-            page_size=1,
-            filter_=f'severity = ERROR AND timestamp >= "{(datetime.now() - timedelta(days=90)).isoformat()}Z"',
-        )
-
-        latest_error_entry = next(latest_errors_iterator)
-        print("Error - ", latest_error_entry)
-        return {
-            "status": "success",
-            "report": f"Latest Error Log: {str(latest_error_entry)}",
-        }
-
-    except StopIteration:
-        print("No ERROR log entries found.")
-        return {"status": "success", "report": "No ERROR log entries found."}
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        logger.error(f"An error occurred: {str(e)}")
-        return {"status": "error", "message": f"Failed to get latest error: {e}"}
-
-
-def get_latest_resource_based_logs(
-    project_id: str, severity: str = "", resource: str = "", _limit: int = 10
-) -> dict:
     """
     Fetches log entries from Google Cloud Logging filtered by severity and resource type.
 
@@ -217,27 +175,28 @@ def get_latest_resource_based_logs(
 
     Note: [IMPORTANT]
         - make sure you have required fields before calling this tool.
-
+        
     """
+
     client = logging_v2.Client(project=project_id)
     project_path = f"projects/{project_id}"
     call_args = {
         "resource_names": [project_path],
-        "order_by": "timestamp desc",
-        "page_size": 5,
+        "order_by": 'timestamp desc',
+        "page_size": 5, 
         "max_results": _limit,
-        "filter_": f'timestamp >= "{(datetime.now() - timedelta(days=90)).isoformat()}Z"',
+        "filter_": f'timestamp >= "{(datetime.now() - timedelta(days=90)).isoformat()}Z"'
     }
 
-    full_filter = f"{resource}"
+    full_filter =  f"{resource}"
 
     for severity_exist in SEVERITIES_LIST:
         if severity is not None and severity.upper().find(severity_exist) != -1:
             full_filter += f" AND {severity}"
             break
-
+    
     call_args["filter_"] = full_filter
-
+    
     collected_logs = []
 
     try:
@@ -253,158 +212,17 @@ def get_latest_resource_based_logs(
 
         if log_count == 0:
             print("No log entries found matching the criteria.")
-            return {
-                "status": "success",
-                "report": "No log entries found matching the criteria.",
-            }
+            return {"status": "success", "report": "No log entries found matching the criteria."}
         else:
             print(f"\nSuccessfully fetched {log_count} log entries.")
-            return {
-                "status": "success",
-                "report": "Fetched recent log entries:\n" + "\n".join(collected_logs),
-            }
+            return {"status": "success", "report": "Fetched recent log entries:\n" + "\n".join(collected_logs)}
 
     except Exception as e:
         print(f"An error occurred: {e}")
         logger.error(f"An error occurred: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to get latest resource based 10 logs: {e}",
-        }
+        return {"status": "error", "message": f"Failed to get latest resource based 10 logs: {e}"}
 
 
-def get_latest_10_logs(project_id: str, severity: str = "") -> dict:
-    f""" {LATEST_LOGS_PROMT} """
+    
 
-    collected_logs = []
-    client = logging_v2.Client(project=project_id)
-    project_path = f"projects/{project_id}"
-
-    call_args = {
-        "resource_names": [project_path],
-        "order_by": "timestamp desc",
-        "page_size": 10,
-        "filter_": None,
-    }
-
-    for severity_exist in SEVERITIES_LIST:
-        if severity is not None and severity.upper().find(severity_exist) != -1:
-            call_args["filter_"] = severity
-            break
-
-    if call_args["filter_"] is not None:
-        call_args["filter_"] += (
-            f' AND timestamp >= "{(datetime.now() - timedelta(days=90)).isoformat()}Z"'
-        )
-    else:
-        call_args["filter_"] = (
-            f'timestamp >= "{(datetime.now() - timedelta(days=90)).isoformat()}Z"'
-        )
-
-    print("filter", call_args["filter_"])
-
-    try:
-        iterator = client.list_entries(**call_args)
-
-        log_count = 0
-        for entry in iterator:
-            log_count += 1
-            print(f"Entry - {log_count} \n", entry)
-            collected_logs.append(f"Entry {log_count}: {str(entry)}")
-            if log_count >= 10:
-                break
-
-        if log_count == 0:
-            print("No log entries found matching the criteria.")
-            return {
-                "status": "success",
-                "report": "No log entries found matching the criteria.",
-            }
-        else:
-            print(f"\nSuccessfully fetched {log_count} log entries.")
-            return {
-                "status": "success",
-                "report": "Fetched recent log entries:\n" + "\n".join(collected_logs),
-            }
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        logger.error(f"An error occurred: {str(e)}")
-        return {"status": "error", "message": f"Failed to get latest 10 logs: {e}"}
-
-
-def get_logs(
-    project_id: str,
-    severity: str = "",
-    start_time: Optional[datetime] = None,
-    end_time: Optional[datetime] = None,
-    _limit: int = 10,
-) -> dict:
-    f""" {TIME_RANGE_LOGS_PROMT} """
-    client = logging_v2.Client(project=project_id)
-    project_path = f"projects/{project_id}"
-
-    call_args = {
-        "resource_names": [project_path],
-        "order_by": "timestamp desc",
-        "page_size": 5,
-        "max_results": _limit,
-    }
-
-    full_filter_str = ""
-
-    for severity_exist in SEVERITIES_LIST:
-        if severity is not None and severity.upper().find(severity_exist) != -1:
-            full_filter_str = f"{severity} AND "
-            break
-
-    # Initialize default time range if not provided
-    if end_time is None:
-        end_time = datetime.now()
-    if start_time is None:
-        start_time = end_time - timedelta(days=90)
-
-    start_time_str = start_time.isoformat()
-    end_time_str = end_time.isoformat()
-
-    if start_time:
-        full_filter_str += f'timestamp>="{start_time_str}"'
-
-    if end_time:
-        if full_filter_str:
-            full_filter_str += f' AND timestamp<="{end_time_str}"'
-        else:
-            full_filter_str += f'timestamp<="{end_time_str}"'
-
-    call_args["filter_"] = full_filter_str
-
-    print("-" * 30)
-
-    collected_logs = []
-
-    try:
-        iterator = client.list_entries(**call_args)
-
-        log_count = 0
-        for entry in iterator:
-            log_count += 1
-            print(f"Entry - {log_count} \n", entry)
-            collected_logs.append(f"Entry {log_count}: {str(entry)}")
-
-        if log_count == 0:
-            print("No log entries found matching the criteria.")
-            return {
-                "status": "success",
-                "report": "No log entries found matching the criteria.",
-            }
-        else:
-            print(f"\nSuccessfully fetched {log_count} log entries.")
-            return {
-                "status": "success",
-                "report": "Fetched filtered log entries:\n" + "\n".join(collected_logs),
-            }
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        logger.error(f"An error occurred: {str(e)}")
-        return {"status": "error", "message": f"Failed to fetch GCP logs: {e}"}
+    

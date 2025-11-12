@@ -3,14 +3,6 @@
 AI-powered agent for GitHub repository management, Git operations, and Google Cloud Storage integration using Google's Agent Development Kit (ADK).
 
 
-## Configuration
-
-Required environment variables in `.env`:
-- `GITHUB_TOKEN` - GitHub Personal Access Token
-- `GOOGLE_API_KEY` - Google AI API key
-- `GOOGLE_CLOUD_PROJECT` - GCP project ID
-- `GOOGLE_APPLICATION_CREDENTIALS` - Path to service account JSON
-
 ## Tools Overview
 
 ### GitHub Tools
@@ -47,7 +39,7 @@ Required environment variables in `.env`:
 ## Key Features
 
 - 🔐 Secure GitHub authentication
-- 📦 Repository download and management
+- 📦 Repository download and management  
 - 🌿 Branch operations and Git workflow
 - ☁️ Direct GCS integration
 - 🤖 AI-powered with Google ADK

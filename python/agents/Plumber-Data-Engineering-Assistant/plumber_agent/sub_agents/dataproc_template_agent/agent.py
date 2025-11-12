@@ -1,23 +1,20 @@
+from google.adk.agents import Agent
 import warnings
 
-from google.adk.agents import Agent
-
+from .tools.dataproc_template_tools import get_dataproc_template, run_dataproc_template, get_transformation_sql
 from .constants import MODEL
 from .prompts import AGENT_INSTRUCTION
-from .tools.dataproc_template_tools import (
-    get_dataproc_template,
-    get_transformation_sql,
-    run_dataproc_template,
-)
 
-warnings.filterwarnings("ignore")
+warnings.filterwarnings('ignore')
 
 root_agent = Agent(
     name="dataproc_template_agent",
-    model=MODEL,
-    description=(
+    model = MODEL,
+    description = (
         "Agent to look for relevant dataproc template based on user query and submit dataproc template job"
     ),
-    instruction=(AGENT_INSTRUCTION),
-    tools=[get_dataproc_template, run_dataproc_template, get_transformation_sql],
+    instruction = (
+        AGENT_INSTRUCTION
+    ),
+    tools=[get_dataproc_template, run_dataproc_template, get_transformation_sql]
 )

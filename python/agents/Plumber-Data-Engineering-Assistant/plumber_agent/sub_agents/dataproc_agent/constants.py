@@ -1,1 +1,1 @@
-MODEL = "gemini-2.5-pro"
+MODEL = 'gemini-2.5-pro'

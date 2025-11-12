@@ -1,88 +1,56 @@
-import os
+import io
+from PIL import Image
+import google.generativeai as genai
 
-import vertexai
-from dotenv import load_dotenv
-from vertexai.generative_models import GenerativeModel, Image
-
-from ..constants import MODEL, STORAGE_CLIENT
-from ..prompts import PARSING_INSTRUCTIONS
-
-# IMPORTING ENVIRONMENT VARIABLES FROM .env FILE
-load_dotenv()
-
-# ENABLING VERTEX AI
-vertexai.init(
-    project=os.getenv("GOOGLE_CLOUD_PROJECT"),
-    location=os.getenv("GOOGLE_CLOUD_LOCATION"),
-)
-
+from agents.dbt_agent.constants import STORAGE_CLIENT, MODEL
+from agents.dbt_agent.prompts import PARSING_INSTRUCTIONS
 
 def generate_dbt_model_sql(gcs_url: str) -> dict:
-    """
-    Generates a dbt model SQL file from input data stored on Google Cloud Storage (GCS).
-
-    This function performs the following steps:
-      - Validates the input GCS URL.
-      - Extracts bucket name, project name, file name, and file type from the URL.
-      - Downloads the file from GCS.
-      - Uses a generative model to convert CSV or image content into SQL code.
-      - Uploads the generated SQL back to the appropriate location in the same GCS bucket,
-        following dbt project conventions.
-      - Adds metadata tags to the uploaded SQL file.
-
-    Args:
-        gcs_url (str): A Google Cloud Storage URL pointing to the input file (must start with "gs://").
-
-    Returns:
-        dict: A dictionary containing:
-            - "output_path" (str or None): The GCS path where the generated SQL was saved, or None on failure.
-            - "output_sql" (str or None): The generated SQL code as a string, or None on failure.
-            - "result" (str): Status message, either "SUCCESS" or an error description.
-
-    Raises:
-        Does not raise exceptions; errors are caught and returned in the "result" field.
-    """
     try:
-        if not gcs_url.startswith("gs://"):
-            return {"result": "Invalid gcs URL"}
-
-        bucket_name, file_path = gcs_url[5:].split("/", 1)
-        dbt_project_name = file_path.split("/")[0]
-        file_name = file_path.split("/")[-1].split(".")[0]
-        file_type = file_path.split("/")[-1].split(".")[1]
-
+        if not gcs_url.startswith('gs://'):
+            return "Invalid gcs URL"
+        
+        bucket_name, file_path = gcs_url[5:].split('/', 1)
+        dbt_project_name = file_path.split('/')[0]
+        file_name = file_path.split('/')[-1].split('.')[0]
+        file_type = file_path.split('/')[-1].split('.')[1]
+        
         bucket = STORAGE_CLIENT.bucket(bucket_name)
         blob = bucket.blob(file_path)
 
-        model = GenerativeModel(MODEL)
+        model = genai.GenerativeModel(MODEL)
 
         if not blob.exists():
-            return {"result": "Object not available at input path"}
-
+            return 'Object not available at input path'
+        
         bytes = blob.download_as_bytes()
-
-        if file_type == "csv":
-            file_content = bytes.decode("utf-8")
+        
+        if file_type == 'csv':
+            file_content = bytes.decode('utf-8')
             response = model.generate_content([PARSING_INSTRUCTIONS, file_content])
         else:
-            image = Image.from_bytes(bytes)
+            image = Image.open(io.BytesIO(bytes))
             response = model.generate_content([PARSING_INSTRUCTIONS, image])
 
-        output_sql = response.text.replace("```sql", "").replace("```", "")
-        output_blob = bucket.blob(dbt_project_name + f"/models/{file_name}.sql")
+        output_sql = response.text.replace('```sql', '').replace('```', '')
+        output_blob = bucket.blob(dbt_project_name + f'/models/{file_name}.sql')
 
-        tags = {"author": "dbt_adk_agent"}
+        tags = {
+            'author': 'dbt_adk_agent'
+        }
         output_blob.metadata = tags
 
-        output_blob.upload_from_string(output_sql, content_type="text/plain")
+        with output_blob.open('w') as file:
+            file.write(output_sql)
+
         return {
-            "output_path": f"gs://{bucket_name}/{dbt_project_name}/models/{file_name}.sql",
-            "output_sql": output_sql,
-            "result": "SUCCESS",
+            'output_path': f'gs://{bucket_name}/{dbt_project_name}/models/{file_name}.sql',
+            'output_sql': output_sql,
+            'result': 'SUCCESS'
         }
     except Exception as err:
         return {
-            "output_path": None,
-            "output_sql": None,
-            "result": f"error - {str(err)}",
+            'output_path': None,
+            'output_sql': None,
+            'result': f'error - {str(err)}'
         }

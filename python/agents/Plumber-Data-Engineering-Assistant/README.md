@@ -1,6 +1,14 @@
 # Plumber - Data Engineering Buddy
 
-Plumber is your data engineering buddy/agent which has capability of creating and deploying data pipelines on Dataflow, Dataproc and dBT on GKE. It also has capability of commiting code on github and veiwing logs and metrices via cloud monitoring. This is achieved by using multiple sub agents as defined in folder structure below. Idea is to accelerate day to day development of repeatetive data pipelines via agent which can do it just via conversations. Currently this agent leverages publicly available Google provided Dataproc and Dataflow Templates. 
+Plumber is your data engineering buddy/agent which has capability of creating and deploying data pipelines on Dataflow, Dataproc and dBT on GKE. It also has capability of commiting code on github and veiwing logs and metrices via cloud monitoring. This is achieved by using multiple sub agents as defined in folder structure below. Idea is to accelerate day to day development of repeatetive data pipelines via agent which can do it just via conversations. Currently this agent leverages publicly available Google provided Dataproc and Dataflow Templates which is open sourced. 
+
+Ref-: 
+- https://github.com/GoogleCloudPlatform/DataflowTemplates
+- https://github.com/GoogleCloudPlatform/dataproc-templates
+
+*ADK Versiong=1.16.0* 
+
+Note: This sample is to be used by users as is. Users are requested to use this as an sample make changes as fit for purpose for them, including issues specific to their environment.  
 
 ## Folder Structure
 ```
@@ -92,7 +100,7 @@ The core of Plumber is powered by the Agent Development Kit (ADK), which enables
 
 ## Contributors
 
-- Anish Sarangi - anish97IND (Agent Owner/Architect)
+- Anish Sarangi - anish97IND (Agent Owner)
 - Mayank Kalsan - mayank1811
 - Aditya- Ignotus-21
 - Bala Priya - balapriya01

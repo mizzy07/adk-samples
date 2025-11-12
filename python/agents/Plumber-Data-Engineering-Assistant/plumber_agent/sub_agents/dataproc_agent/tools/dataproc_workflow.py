@@ -1,21 +1,19 @@
-from typing import Any, Dict, List, Optional
-
+import google.cloud.dataproc_v1 as dataproc
 from google.api_core.exceptions import GoogleAPICallError
 from google.cloud.dataproc_v1 import WorkflowTemplateServiceClient
-from google.cloud.dataproc_v1.types import (
-    ClusterConfig,
-    ClusterSelector,
-    DiskConfig,
-    GceClusterConfig,
-    InstanceGroupConfig,
-    ManagedCluster,
-    OrderedJob,
-    PySparkJob,
-    SoftwareConfig,
-    SparkJob,
-    WorkflowTemplate,
-    WorkflowTemplatePlacement,
-)
+from typing import List, Dict, Any, Optional
+from google.cloud.dataproc_v1.types import (WorkflowTemplate,
+                                            WorkflowTemplatePlacement,
+                                            ManagedCluster, 
+                                            ClusterSelector, 
+                                            ClusterConfig, 
+                                            GceClusterConfig, 
+                                            InstanceGroupConfig, 
+                                            DiskConfig, 
+                                            SoftwareConfig,
+                                            PySparkJob,
+                                            SparkJob,
+                                            OrderedJob)
 
 
 def get_workflow_template_client(region: str) -> WorkflowTemplateServiceClient:
@@ -34,12 +32,12 @@ def get_workflow_template_client(region: str) -> WorkflowTemplateServiceClient:
 
 
 def create_workflow_template(
-    project_id: str,
-    region: str,
-    template_id: str,
-    jobs: List[Dict[str, Any]],
-    managed_cluster_config: Optional[Dict[str, Any]] = None,
-    cluster_selector_labels: Optional[Dict[str, str]] = None,
+   project_id: str,
+   region: str,
+   template_id: str,
+   jobs: List[Dict[str, Any]],
+   managed_cluster_config: Optional[Dict[str, Any]] = None,
+   cluster_selector_labels: Optional[Dict[str, str]] = None,
 ) -> dict:
     """
     Creates a Dataproc workflow template.
@@ -56,12 +54,15 @@ def create_workflow_template(
         A dictionary with the status of the workflow template creation.
     """
     if not jobs:
-        return {"status": "error", "message": "The 'jobs' list cannot be empty."}
+        return {
+            "status": "error",
+            "message": "The 'jobs' list cannot be empty."
+        }
 
     if not (managed_cluster_config or cluster_selector_labels):
         return {
             "status": "error",
-            "message": "You must specify either 'managed_cluster_config' or 'cluster_selector_labels'.",
+            "message": "You must specify either 'managed_cluster_config' or 'cluster_selector_labels'."
         }
 
     if managed_cluster_config and cluster_selector_labels:
@@ -70,7 +71,7 @@ def create_workflow_template(
             "message": (
                 "'managed_cluster_config' and 'cluster_selector_labels' are "
                 "mutually exclusive. Please provide only one."
-            ),
+            )
         }
 
     workflow_template_client = get_workflow_template_client(region)
@@ -93,28 +94,21 @@ def create_workflow_template(
                     num_instances=1,
                     machine_type_uri=managed_cluster_config.get("master_machine_type"),
                     disk_config=DiskConfig(
-                        boot_disk_size_gb=managed_cluster_config.get(
-                            "master_disk_size_gb"
-                        )
+                        boot_disk_size_gb=managed_cluster_config.get("master_disk_size_gb")
                     ),
                 ),
                 worker_config=InstanceGroupConfig(
                     num_instances=managed_cluster_config.get("num_workers"),
                     machine_type_uri=managed_cluster_config.get("worker_machine_type"),
                     disk_config=DiskConfig(
-                        boot_disk_size_gb=managed_cluster_config.get(
-                            "worker_disk_size_gb"
-                        )
-                    )
-                    if managed_cluster_config.get("worker_disk_size_gb")
-                    else None,
+                        boot_disk_size_gb=managed_cluster_config.get("worker_disk_size_gb")
+                    ) if managed_cluster_config.get("worker_disk_size_gb") else None,
                 ),
                 software_config=SoftwareConfig(
                     image_version=managed_cluster_config.get("image_version"),
-                ),
+                )
             ),
         )
-
     elif cluster_selector_labels:
         placement_config.cluster_selector = ClusterSelector(
             cluster_labels=cluster_selector_labels
@@ -132,13 +126,9 @@ def create_workflow_template(
 
             if "pyspark_job" in job_data:
                 job_obj.pyspark_job = PySparkJob(
-                    main_python_file_uri=job_data["pyspark_job"].get(
-                        "main_python_file_uri"
-                    ),
+                    main_python_file_uri=job_data["pyspark_job"].get("main_python_file_uri"),
                     args=job_data["pyspark_job"].get("args", []),
-                    python_file_uris=job_data["pyspark_job"].get(
-                        "python_file_uris", []
-                    ),
+                    python_file_uris=job_data["pyspark_job"].get("python_file_uris", []),
                     jar_file_uris=job_data["pyspark_job"].get("jar_file_uris", []),
                     properties=job_data["pyspark_job"].get("properties", {}),
                 )
@@ -158,25 +148,24 @@ def create_workflow_template(
         workflow_template_client.create_workflow_template(
             parent=parent, template=template
         )
-
         return {
             "status": "success",
             "message": f"Workflow template '{template_id}' created successfully.",
             "template_id": template_id,
         }
-
     except GoogleAPICallError as e:
         return {
             "status": "error",
-            "error_message": f"Failed to create workflow template: {str(e)}",
+            "error_message": f"Failed to create workflow template: {str(e)}"
         }
     except Exception as e:
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred: {str(e)}",
+            "error_message": f"An unexpected error occurred: {str(e)}"
         }
 
 
+       
 def list_workflow_templates(project_id: str, region: str) -> dict:
     """
     Lists all Dataproc workflow templates in a region.
@@ -189,30 +178,34 @@ def list_workflow_templates(project_id: str, region: str) -> dict:
         A dictionary containing a list of workflow templates.
     """
     try:
+        
         workflow_template_client = get_workflow_template_client(region)
 
+        
         parent = f"projects/{project_id}/regions/{region}"
         templates = workflow_template_client.list_workflow_templates(parent=parent)
 
+        
         template_list = []
         for template in templates:
-            template_list.append(
-                {
-                    "name": template.name,
-                    "id": template.id,
-                    "create_time": template.create_time,
-                }
-            )
+            template_list.append({
+                "name": template.name,
+                "id": template.id,
+                "create_time": template.create_time
+            })
 
-        return {"status": "success", "templates": template_list}
+        return {
+            "status": "success",
+            "templates": template_list
+        }
 
     except GoogleAPICallError as e:
         return {
             "status": "error",
-            "error_message": f"Failed to list workflow templates: {e.message}",
+            "error_message": f"Failed to list workflow templates: {e.message}"
         }
     except Exception as e:
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred: {str(e)}",
+            "error_message": f"An unexpected error occurred: {str(e)}"
         }

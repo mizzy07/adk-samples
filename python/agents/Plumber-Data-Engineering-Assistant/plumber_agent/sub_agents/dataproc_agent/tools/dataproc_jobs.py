@@ -2,12 +2,13 @@ import datetime
 import os
 from typing import Optional
 
-from dotenv import load_dotenv
-from google.api_core.exceptions import GoogleAPICallError
 from google.cloud import dataproc_v1 as dataproc
+from google.cloud.dataproc_v1.types import Job, PySparkJob, JobPlacement, SparkJob
+from google.api_core.exceptions import GoogleAPICallError
 from google.cloud.dataproc_v1 import JobControllerClient
-from google.cloud.dataproc_v1.types import Job, JobPlacement, SparkJob
 
+
+from dotenv import load_dotenv
 load_dotenv()
 
 
@@ -24,14 +25,14 @@ def get_job_client(region: str) -> JobControllerClient:
     return JobControllerClient(
         client_options={"api_endpoint": f"{region}-dataproc.googleapis.com:443"}
     )
-
-
+    
+    
 def submit_pyspark_job(
     project_id: str,
     region: str,
     cluster_name: str,
     main_python_file_uri: str,
-    input_path: Optional[str] = None,
+    input_path: Optional[str] = None
 ) -> dict:
     """
     Submits a PySpark job to a Dataproc cluster.
@@ -46,25 +47,27 @@ def submit_pyspark_job(
     Returns:
         A dictionary with the submission status and job ID.
     """
+    
     try:
+        
         job_client = get_job_client(region)
 
         # Define the output path for the job
         output_bucket_path = os.getenv("GCS_BUCKET_FOR_OUTPUT")
         current_timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        output_path = (
-            f"gs://{output_bucket_path}/output/wordcount_results_{current_timestamp}"
-        )
+        output_path = f"gs://{output_bucket_path}/output/wordcount_results_{current_timestamp}"
+
 
         job_args = [output_path]
         if input_path is not None:
-            job_args.insert(0, input_path)
+            job_args.insert(0, input_path) 
 
         # Define the PySpark job configuration
         pyspark_job = dataproc.PySparkJob(
-            main_python_file_uri=main_python_file_uri, args=job_args
+            main_python_file_uri=main_python_file_uri,
+            args=job_args
         )
-
+        
         # Define where the job should run
         placement = dataproc.JobPlacement(cluster_name=cluster_name)
 
@@ -72,30 +75,40 @@ def submit_pyspark_job(
         job = dataproc.Job(
             placement=placement,
             pyspark_job=pyspark_job,
+            labels={"submitted_from": "plumber"}
         )
+
 
         # Submit the job
         submitted_job = job_client.submit_job(
-            project_id=project_id, region=region, job=job
+            project_id=project_id,
+            region=region,
+            job=job
         )
+        
 
         job_id = submitted_job.reference.job_id
-        return {"status": "submitted", "job_id": job_id}
+        return {
+            "status": "submitted",
+            "job_id": job_id
+        }
 
     except GoogleAPICallError as e:
         return {
             "status": "error",
-            "error_message": f"Failed to submit Dataproc job: {e.message}",
+            "error_message": f"Failed to submit Dataproc job: {e.message}"
         }
     except Exception as e:
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred during job submission: {str(e)}",
+            "error_message": f"An unexpected error occurred during job submission: {str(e)}"
         }
-
-
+        
 def submit_scala_job(
-    project_id: str, region: str, cluster_name: str, main_jar_file_uri: str
+    project_id: str,
+    region: str,
+    cluster_name: str,
+    main_jar_file_uri: str
 ) -> dict:
     """
     Submits a Scala Spark job to a Dataproc cluster.
@@ -109,39 +122,50 @@ def submit_scala_job(
     Returns:
         A dictionary with the submission status and job ID.
     """
+   
     try:
         # Create a client for the JobController API
         job_client = get_job_client(region)
 
         # Define the Spark job configuration (Scala jobs are submitted as Spark jobs)
-        spark_job = SparkJob(main_jar_file_uri=main_jar_file_uri)
+        spark_job = SparkJob(
+            main_jar_file_uri=main_jar_file_uri
+        )
 
         # Define where the job should run (on your specified cluster)
         placement = JobPlacement(cluster_name=cluster_name)
 
         # Construct the full Job object
-        job = Job(placement=placement, spark_job=spark_job)
+        job = Job(
+            placement=placement,
+            spark_job=spark_job,
+            labels={"submitted_from": "plumber"}
+        )
 
         # Submit the job
         submitted_job = job_client.submit_job(
-            project_id=project_id, region=region, job=job
+            project_id=project_id,
+            region=region,
+            job=job
         )
-
+        
         job_id = submitted_job.reference.job_id
-        return {"status": "submitted", "job_id": job_id}
+        return {
+            "status": "submitted",
+            "job_id": job_id
+        }
 
     except GoogleAPICallError as e:
         return {
             "status": "error",
-            "error_message": f"Failed to submit Scala job: {e.message}",
+            "error_message": f"Failed to submit Scala job: {e.message}"
         }
     except Exception as e:
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred during Scala job submission: {str(e)}",
+            "error_message": f"An unexpected error occurred during Scala job submission: {str(e)}"
         }
-
-
+        
 def check_job_status(project_id: str, region: str, job_id: str) -> dict:
     """
     Checks the status of a Dataproc job.
@@ -155,27 +179,32 @@ def check_job_status(project_id: str, region: str, job_id: str) -> dict:
         A dictionary with the job ID and its current status.
     """
     try:
+        
         job_client = get_job_client(region)
 
+       
         job = job_client.get_job(project_id=project_id, region=region, job_id=job_id)
         job_state = job.status.state
+        
 
         return {
             "job_id": job_id,
-            "status": job_state.name,
+            "status": job_state.name, 
+            
         }
 
     except GoogleAPICallError as e:
         return {
             "status": "error",
-            "error_message": f"Failed to check job status: {e.message}",
+            "error_message": f"Failed to check job status: {e.message}"
         }
     except Exception as e:
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred while checking job status: {str(e)}",
+            "error_message": f"An unexpected error occurred while checking job status: {str(e)}"
         }
-
+        
+        
 
 def list_dataproc_jobs(
     project_id: str,
@@ -191,10 +220,13 @@ def list_dataproc_jobs(
     Returns:
         A dictionary containing a list of jobs.
     """
+    
+
     try:
         # Create a client for the JobController API
         job_client = get_job_client(region)
 
+        
         jobs = job_client.list_jobs(project_id=project_id, region=region)
 
         job_list = []
@@ -202,11 +234,10 @@ def list_dataproc_jobs(
             job_info = {
                 "job_id": job.reference.job_id,
                 "status": job.status.state.name,
-                "status_message": job.status.details
-                if job.status.details
-                else "No detailed message.",
+                "status_message": job.status.details if job.status.details else "No detailed message.",
             }
 
+          
             if job.pyspark_job:
                 job_info["type"] = "PySpark"
             elif job.spark_job:
@@ -219,27 +250,31 @@ def list_dataproc_jobs(
                 job_info["type"] = "Presto"
             else:
                 job_info["type"] = "Unknown"
-
+            
             job_list.append(job_info)
-
-        return {"status": "success", "jobs": job_list}
+           
+        return {
+            "status": "success",
+            "jobs": job_list
+        }
 
     except GoogleAPICallError as e:
+       
         return {
             "status": "error",
-            "error_message": f"Failed to list Dataproc jobs: {e.message}",
+            "error_message": f"Failed to list Dataproc jobs: {e.message}"
         }
     except Exception as e:
+       
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred while listing jobs: {str(e)}",
+            "error_message": f"An unexpected error occurred while listing jobs: {str(e)}"
         }
-
 
 def list_dataproc_jobs_by_type(
     project_id: str,
     region: str,
-    job_type: str,
+    job_type: str, 
 ) -> dict:
     """
     Lists Dataproc jobs in a region filtered by job type.
@@ -252,6 +287,7 @@ def list_dataproc_jobs_by_type(
     Returns:
         A dictionary containing a list of filtered jobs.
     """
+   
     normalized_job_type = job_type.lower().strip()
 
     try:
@@ -273,37 +309,41 @@ def list_dataproc_jobs_by_type(
                 current_job_type = "Spark SQL"
             elif job.presto_job:
                 current_job_type = "Presto"
-
+            
             # Check if the current job's type matches the requested job_type
             if current_job_type.lower() == normalized_job_type:
                 job_info = {
                     "job_id": job.reference.job_id,
-                    "status": job.status.state.name,  # e.g., 'PENDING', 'RUNNING', 'DONE', 'ERROR'
-                    "status_message": job.status.details
-                    if job.status.details
-                    else "No detailed message.",
+                    "status": job.status.state.name, # e.g., 'PENDING', 'RUNNING', 'DONE', 'ERROR'
+                    "status_message": job.status.details if job.status.details else "No detailed message.",
                     "type": current_job_type,
                 }
                 filtered_job_list.append(job_info)
-
-        return {"status": "success", "jobs": filtered_job_list}
+             
+        return {
+            "status": "success",
+            "jobs": filtered_job_list
+        }
 
     except GoogleAPICallError as e:
+    
         return {
             "status": "error",
-            "error_message": f"Failed to list Dataproc jobs by type: {e.message}",
+            "error_message": f"Failed to list Dataproc jobs by type: {e.message}"
         }
     except Exception as e:
+       
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred while listing jobs by type: {str(e)}",
+            "error_message": f"An unexpected error occurred while listing jobs by type: {str(e)}"
         }
+
 
 
 def list_dataproc_jobs_by_cluster(
     project_id: str,
     region: str,
-    cluster_name: str,  # The name of the cluster to filter jobs by
+    cluster_name: str,
 ) -> dict:
     """
     Lists Dataproc jobs in a region filtered by cluster name.
@@ -316,13 +356,16 @@ def list_dataproc_jobs_by_cluster(
     Returns:
         A dictionary containing a list of filtered jobs.
     """
+ 
     try:
+        
         job_client = get_job_client(region)
 
         jobs = job_client.list_jobs(project_id=project_id, region=region)
 
         filtered_job_list = []
         for job in jobs:
+           
             if job.placement and job.placement.cluster_name == cluster_name:
                 current_job_type = "Unknown"
                 if job.pyspark_job:
@@ -335,31 +378,36 @@ def list_dataproc_jobs_by_cluster(
                     current_job_type = "Spark SQL"
                 elif job.presto_job:
                     current_job_type = "Presto"
-
+                
                 job_info = {
                     "job_id": job.reference.job_id,
-                    "status": job.status.state.name,
-                    "status_message": job.status.details
-                    if job.status.details
-                    else "No detailed message.",
+                    "status": job.status.state.name, 
+                    "status_message": job.status.details if job.status.details else "No detailed message.",
                     "type": current_job_type,
-                    "cluster_name": job.placement.cluster_name,
+                    "cluster_name": job.placement.cluster_name, 
+               
                 }
                 filtered_job_list.append(job_info)
-
-        return {"status": "success", "jobs": filtered_job_list}
+           
+        return {
+            "status": "success",
+            "jobs": filtered_job_list
+        }
 
     except GoogleAPICallError as e:
+      
         return {
             "status": "error",
-            "error_message": f"Failed to list Dataproc jobs by cluster: {e.message}",
+            "error_message": f"Failed to list Dataproc jobs by cluster: {e.message}"
         }
     except Exception as e:
+   
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred while listing jobs by cluster: {str(e)}",
+            "error_message": f"An unexpected error occurred while listing jobs by cluster: {str(e)}"
         }
-
+        
+        
 
 def delete_dataproc_job(
     project_id: str,
@@ -377,26 +425,30 @@ def delete_dataproc_job(
     Returns:
         A dictionary with the status of the deletion request.
     """
+ 
     try:
+        
         job_client = get_job_client(region)
 
         job_client.delete_job(project_id=project_id, region=region, job_id=job_id)
 
         return {
             "status": "success",
-            "message": f"Delete request for job ID '{job_id}' sent successfully. The job should terminate shortly.",
+            "message": f"Delete request for job ID '{job_id}' sent successfully. The job should terminate shortly."
         }
 
     except GoogleAPICallError as e:
+       
         return {
             "status": "error",
-            "error_message": f"Failed to delete Dataproc job '{job_id}': {e.message}",
+            "error_message": f"Failed to delete Dataproc job '{job_id}': {e.message}"
         }
     except Exception as e:
         return {
             "status": "error",
-            "error_message": f"An unexpected error occurred while deleting job '{job_id}': {str(e)}",
+            "error_message": f"An unexpected error occurred while deleting job '{job_id}': {str(e)}"
         }
+
 
 
 def check_dataproc_job_exists(
@@ -415,6 +467,7 @@ def check_dataproc_job_exists(
     Returns:
         A dictionary indicating whether the job exists and its status.
     """
+   
     try:
         # Create a client for the JobController API
         job_client = get_job_client(region)
@@ -422,23 +475,27 @@ def check_dataproc_job_exists(
         # Attempt to get the job
         job = job_client.get_job(project_id=project_id, region=region, job_id=job_id)
 
+        
         return {
             "status": "success",
             "exists": True,
             "job_id": job_id,
-            "message": f"Job '{job_id}' exists and is in '{job.status.state.name}' state.",
+            "message": f"Job '{job_id}' exists and is in '{job.status.state.name}' state."
         }
 
-    except GoogleAPICallError:
-        return {
-            "status": "success",
-            "exists": False,
-            "job_id": job_id,
-            "message": f"Job '{job_id}' does not exist.",
-        }
-
-    except Exception:
+    except GoogleAPICallError as e:
+        
+            return {
+                "status": "success",
+                "exists": False,
+                "job_id": job_id,
+                "message": f"Job '{job_id}' does not exist."
+            }
+        
+    except Exception as e:
+       
         return {
             "status": "error",
-            "exists": None,
+            "exists": None, 
+            
         }
