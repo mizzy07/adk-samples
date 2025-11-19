@@ -81,11 +81,6 @@ other models for these samples.
 │   └── README.md               # This file (Repository overview)
 ```
 
-## 📝 Code Quality Checks
-
-We use automated checks to ensure high quality and consistency across all code samples.
-
-This script will run `black`, `isort` and `flake8` to check for formatting and linting errors.
 
 ## ℹ️ Getting help
 
