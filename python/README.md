@@ -85,21 +85,6 @@ other models for these samples.
 
 We use automated checks to ensure high quality and consistency across all code samples.
 
-### 🐍 Python Contributor Pre-Check
-
-Before submitting a Pull Request with changes to Python files (in `python/agents` or `python/notebooks`), please run the following script locally to catch any formatting or linting errors:
-
-1. Ensure you have Python installed.
-2. Run the check script from the repository root:
-
-```bash
-./python-checks.sh --run # run all checks
-./python-checks.sh --run all # run all checks
-./python-checks.sh --run black # run black only
-./python-checks.sh --run isort flake8 # run isort and flake8
-./python-checks.sh --help # for more info
-```
-
 This script will run `black`, `isort` and `flake8` to check for formatting and linting errors.
 
 ## ℹ️ Getting help
