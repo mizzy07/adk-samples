@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 
 from google.adk.agents import LlmAgent, LoopAgent, ParallelAgent, SequentialAgent
-from google.adk.runners import InMemoryRunner
 from google.genai import types
 
 from . import instructions
@@ -39,9 +37,10 @@ KEY_FOCUSED_CANDIDATE = "focused_chapter_candidate"
 KEY_FINAL_STORY = "final_story"
 
 
-def khar(callback_context, llm_request):
+def set_initial_story(callback_context, llm_request):
     callback_context.state[KEY_CURRENT_STORY] = "Chapter 1"
     return None
+
 
 # --- 1. Agent Definitions ---
 
@@ -54,7 +53,7 @@ prompt_enhancer = LlmAgent(
     instruction=instructions.PROMPT_ENHANCER_INSTRUCTION,
     description="Expands user prompt into a full story premise.",
     output_key=KEY_ENHANCED_PROMPT,
-    before_model_callback = khar
+    before_model_callback=set_initial_story,
 )
 
 # Focuses on novelty and twists (High Temperature).
