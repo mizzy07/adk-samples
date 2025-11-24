@@ -4,14 +4,16 @@ It includes functions for authentication, searching repositories,
 listing branches, and downloading repository code.
 """
 
+import logging
 import os
 import shutil
 import zipfile
-import logging
 from typing import Any, Optional
+
 import requests
-from .git_ops import initialize_git_repo
+
 from ..utils import _create_github_headers, _get_auth_token, _parse_repo_path
+from .git_ops import initialize_git_repo
 
 logger = logging.getLogger("plumber-agent")
 
@@ -28,7 +30,10 @@ def authenticate_github(token: str = "") -> dict[str, Any]:
     """Authenticate with GitHub using a Personal Access Token."""
     token = _get_auth_token(token)
     if not token:
-        return {"status": "error", "message": "Authentication failed: No token provided."}
+        return {
+            "status": "error",
+            "message": "Authentication failed: No token provided.",
+        }
     headers = _create_github_headers(token)
     try:
         response = requests.get(f"{API_BASE_URL}/user", headers=headers, timeout=60)
@@ -80,14 +85,20 @@ def search_repositories(repo_name: str, token: str = "") -> dict[str, Any]:
         return {"status": "error", "message": msg}
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": f"An error occurred during search: {str(e)}"}
+        return {
+            "status": "error",
+            "message": f"An error occurred during search: {str(e)}",
+        }
 
 
 def list_branches(repository: str, token: str = "") -> dict[str, Any]:
     """List all branches for a given repository."""
     owner, repo = _parse_repo_path(repository)
     if not owner:
-        return {"status": "error", "message": "Invalid repository format. Use 'owner/repo'."}
+        return {
+            "status": "error",
+            "message": "Invalid repository format. Use 'owner/repo'.",
+        }
     token = _get_auth_token(token)
     headers = _create_github_headers(token)
     try:
@@ -96,10 +107,17 @@ def list_branches(repository: str, token: str = "") -> dict[str, Any]:
         )
         response.raise_for_status()
         branches = [branch["name"] for branch in response.json()]
-        return {"status": "success", "repository": f"{owner}/{repo}", "branches": branches}
+        return {
+            "status": "success",
+            "repository": f"{owner}/{repo}",
+            "branches": branches,
+        }
     except requests.exceptions.Timeout as e:
         logger.error("An error occurred: %s", e, exc_info=True)
-        return {"status": "error", "message": "Request timed out. GitHub did not respond in time."}
+        return {
+            "status": "error",
+            "message": "Request timed out. GitHub did not respond in time.",
+        }
     except requests.exceptions.HTTPError as e:
         logger.error("An error occurred: %s", e, exc_info=True)
         if e.response.status_code == 404:
@@ -136,7 +154,10 @@ def download_repository(
     """
     owner, repo = _parse_repo_path(repository)
     if not owner:
-        return {"status": "error", "message": "Invalid repository format. Use 'owner/repo'."}
+        return {
+            "status": "error",
+            "message": "Invalid repository format. Use 'owner/repo'.",
+        }
 
     # Set the default download path if not provided
     if download_path is None:

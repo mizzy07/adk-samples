@@ -9,7 +9,7 @@ import subprocess
 logger = logging.getLogger("plumber-agent")
 
 
-def run_dbt_project(dbt_project_path: str) -> dict[str, str|int|None]:
+def run_dbt_project(dbt_project_path: str) -> dict[str, str | int | None]:
     """
     Runs dbt commands to debug and execute a dbt project located at the specified path.
 

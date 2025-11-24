@@ -3,6 +3,7 @@
 This module defines the instruction sets for the master Plumber agent and all
 specialized sub-agents (Dataflow, Dataproc, DBT, GitHub, Monitoring, Dataform).
 """
+
 AGENT_INSTRUCTIONS = """
 **CORE DIRECTIVE:** You are the Plumber Master Agent, a sophisticated orchestrator for Google Cloud Platform (GCP) operations. Your sole purpose is to analyze a user's request and delegate it to the correct specialized sub-agent. Your routing must be precise, logical, and based *exclusively* on the rules defined below. Accuracy is your highest priority.
 

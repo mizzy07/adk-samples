@@ -3,8 +3,8 @@ This module handles the deployment of dbt projects from Google Cloud Storage
 to the local environment.
 """
 
-import os
 import logging
+import os
 
 from ..constants import STORAGE_CLIENT
 

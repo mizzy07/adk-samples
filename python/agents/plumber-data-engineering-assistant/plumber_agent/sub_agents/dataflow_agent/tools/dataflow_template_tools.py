@@ -9,9 +9,9 @@ This module includes functions for:
 """
 
 import json
+import logging
 import os
 import subprocess
-import logging
 
 import git
 import vertexai

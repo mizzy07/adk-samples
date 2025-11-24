@@ -1,18 +1,20 @@
 """Core agent module for orchestrating sub-agents."""
 
-from google.genai import types
 from google.adk.agents import Agent
+from google.genai import types
+
+from .constants import MODEL
+from .prompts import AGENT_INSTRUCTIONS
 
 # Import root_agents from each subagent
 from .sub_agents.dataflow_agent.agent import root_agent as dataflow_agent
 from .sub_agents.dataproc_agent.agent import root_agent as dataproc_agent
-from .sub_agents.dataproc_template_agent.agent import root_agent as dataproc_template_agent
+from .sub_agents.dataproc_template_agent.agent import (
+    root_agent as dataproc_template_agent,
+)
 from .sub_agents.dbt_agent.agent import root_agent as dbt_agent
 from .sub_agents.github_agent.agent import root_agent as github_agent
 from .sub_agents.monitoring_agent.agent import root_agent as monitoring_agent
-
-from .prompts import AGENT_INSTRUCTIONS
-from .constants import MODEL
 
 root_agent = Agent(
     name="plumber_agent",
@@ -25,7 +27,6 @@ root_agent = Agent(
         "(GitHub, GCS), and cloud observability (Monitoring logs & metrics)."
     ),
     instruction=AGENT_INSTRUCTIONS,
-
     sub_agents=[
         dataflow_agent,
         dataproc_agent,

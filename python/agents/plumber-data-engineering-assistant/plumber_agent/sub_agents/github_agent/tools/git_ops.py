@@ -5,12 +5,12 @@ It includes functions for initializing repositories, checking status,
 adding files, committing changes, and managing branches.
 """
 
+import logging
 import os
 from typing import Any, Optional
-import logging
-import git
-from git import Repo, InvalidGitRepositoryError
 
+import git
+from git import InvalidGitRepositoryError, Repo
 
 logger = logging.getLogger("plumber-agent")
 

@@ -1,17 +1,15 @@
 """Module for managing Dataproc jobs."""
 
 import datetime
-import os
-from typing import Optional, Any
 import logging
-
-from google.cloud import dataproc_v1 as dataproc
-from google.cloud.dataproc_v1.types import Job, JobPlacement, SparkJob
-from google.api_core.exceptions import GoogleAPICallError
-from google.cloud.dataproc_v1 import JobControllerClient
-
+import os
+from typing import Any, Optional
 
 from dotenv import load_dotenv
+from google.api_core.exceptions import GoogleAPICallError
+from google.cloud import dataproc_v1 as dataproc
+from google.cloud.dataproc_v1 import JobControllerClient
+from google.cloud.dataproc_v1.types import Job, JobPlacement, SparkJob
 
 logger = logging.getLogger("plumber-agent")
 
@@ -98,7 +96,9 @@ def submit_pyspark_job(
         }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error(
-            "An unexpected error occurred during PySpark job submission: %s", e, exc_info=True
+            "An unexpected error occurred during PySpark job submission: %s",
+            e,
+            exc_info=True,
         )
         return {
             "status": "error",
@@ -157,7 +157,9 @@ def submit_scala_job(
         }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error(
-            "An unexpected error occurred during Scala job submission: %s", e, exc_info=True
+            "An unexpected error occurred during Scala job submission: %s",
+            e,
+            exc_info=True,
         )
         return {
             "status": "error",
@@ -482,7 +484,10 @@ def delete_dataproc_job(
         }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error(
-            "An unexpected error occurred while deleting job ID '%s': %s", job_id, e, exc_info=True
+            "An unexpected error occurred while deleting job ID '%s': %s",
+            job_id,
+            e,
+            exc_info=True,
         )
         return {
             "status": "error",

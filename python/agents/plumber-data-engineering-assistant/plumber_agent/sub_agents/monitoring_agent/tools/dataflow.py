@@ -5,8 +5,9 @@ This module provides tools for interacting with Google Cloud Dataflow.
 import logging
 from datetime import datetime, timedelta
 
-from google.cloud import logging_v2
 from google.api_core import exceptions as google_exceptions
+from google.cloud import logging_v2
+
 from .utils import _process_log_iterator
 
 logger = logging.getLogger("plumber-agent")

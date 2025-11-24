@@ -1,14 +1,14 @@
 """Tools for managing and orchestrating Google Cloud Dataproc templates."""
 
 import json
+import logging
 import os
 import shutil
 import subprocess
 import uuid
-import logging
+
 import vertexai
 from dotenv import load_dotenv
-from typing import Union
 from google.cloud import storage
 from vertexai.generative_models import GenerativeModel, Image
 
@@ -94,9 +94,7 @@ def get_transformation_sql(gcs_url: str) -> dict[str, str]:
 
 
 # TOOL TO FETCH THE RELEAVANT DATAPROC TEMPLATE BASED ON USER INPUT
-def get_dataproc_template(
-    user_prompt: str, language: LANGUAGE_OPTIONS
-) -> dict[str, str]:
+def get_dataproc_template(user_prompt: str, language: LANGUAGE_OPTIONS) -> dict[str, str]:
     """
     Retrieves the most relevant Dataproc template based on the user's prompt
     and selected programming language (Python or Java).

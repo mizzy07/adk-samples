@@ -6,8 +6,10 @@ import logging
 import subprocess
 from datetime import datetime, timedelta
 from typing import Union
-from google.cloud import logging_v2
+
 from google.api_core import exceptions as google_exceptions
+from google.cloud import logging_v2
+
 from .utils import _process_log_iterator
 
 logger = logging.getLogger("plumber-agent")
@@ -22,10 +24,16 @@ def _handle_log_report(
     log_count = len(collected_logs)
     if log_count == 0:
         logger.info("No log entries found matching the criteria.")
-        return {"status": "success", "report": "No log entries found matching the criteria."}
+        return {
+            "status": "success",
+            "report": "No log entries found matching the criteria.",
+        }
 
     logger.info("\nSuccessfully fetched %s log entries.", log_count)
-    return {"status": "success", "report": f"{message_prefix}:\n" + "\n".join(collected_logs)}
+    return {
+        "status": "success",
+        "report": f"{message_prefix}:\n" + "\n".join(collected_logs),
+    }
 
 
 def get_dataproc_cluster_logs_with_name(

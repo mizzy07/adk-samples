@@ -3,8 +3,9 @@ This module provides functionality to generate dbt model SQL files
 from input files stored in Google Cloud Storage using Generative AI.
 """
 
-import os
 import logging
+import os
+
 import vertexai
 from dotenv import load_dotenv
 from vertexai.generative_models import GenerativeModel, Image

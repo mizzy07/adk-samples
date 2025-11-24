@@ -1,18 +1,18 @@
 """Module for managing Dataproc clusters."""
 
-from typing import Optional, Any
 import logging
+from typing import Any, Optional
 
+from google.api_core.exceptions import GoogleAPICallError, NotFound
 from google.cloud import dataproc
+from google.cloud.dataproc_v1 import ClusterControllerClient
 from google.cloud.dataproc_v1.types import (
     Cluster,
     ClusterConfig,
+    DiskConfig,
     GceClusterConfig,
     InstanceGroupConfig,
-    DiskConfig,
 )
-from google.api_core.exceptions import GoogleAPICallError, NotFound
-from google.cloud.dataproc_v1 import ClusterControllerClient
 
 logger = logging.getLogger("plumber-agent")
 

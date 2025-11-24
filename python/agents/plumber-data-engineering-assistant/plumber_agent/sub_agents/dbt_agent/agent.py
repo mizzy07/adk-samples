@@ -12,11 +12,11 @@ from google.genai import types
 # UTILITY IMPORTS
 from .constants import MODEL
 from .prompts import AGENT_INSTRUCTIONS
+from .tools.dbt_model_sql_generator import generate_dbt_model_sql
 
 # TOOL IMPORTS
 from .tools.dbt_project_deployment import deploy_dbt_project
 from .tools.dbt_project_runner import run_dbt_project
-from .tools.dbt_model_sql_generator import generate_dbt_model_sql
 
 warnings.filterwarnings("ignore")
 

@@ -1,10 +1,11 @@
 """Utility functions for the Dataproc template agent module."""
 
 import json
+import logging
 import os
 import shutil
 import subprocess
-import logging
+
 import git
 import vertexai
 from dotenv import load_dotenv

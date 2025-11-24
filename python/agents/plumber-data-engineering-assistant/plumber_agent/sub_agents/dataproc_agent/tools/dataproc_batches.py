@@ -1,23 +1,22 @@
 """Module for managing Dataproc Serverless batches."""
 
-from typing import Any
 import logging
+from typing import Any
 
+from google.api_core.exceptions import GoogleAPICallError
 from google.cloud import dataproc_v1 as dataproc
+from google.cloud.dataproc_v1 import BatchControllerClient
 from google.cloud.dataproc_v1.types import (
     Batch,
+    CreateBatchRequest,
     EnvironmentConfig,
     ExecutionConfig,
-    RuntimeConfig,
-    PySparkBatch,
-    SparkBatch,
     PeripheralsConfig,
+    PySparkBatch,
+    RuntimeConfig,
+    SparkBatch,
     SparkHistoryServerConfig,
-    CreateBatchRequest,
 )
-from google.cloud.dataproc_v1 import BatchControllerClient
-from google.api_core.exceptions import GoogleAPICallError
-
 
 logger = logging.getLogger("plumber-agent")
 
@@ -328,7 +327,10 @@ def delete_dataproc_serverless_batch(project_id: str, region: str, batch_id: str
         }
     except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error(
-            "An unexpected error occurred while deleting batch %s: %s", batch_id, e, exc_info=True
+            "An unexpected error occurred while deleting batch %s: %s",
+            batch_id,
+            e,
+            exc_info=True,
         )
         return {
             "status": "error",

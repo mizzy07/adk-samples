@@ -5,9 +5,9 @@ This module provides utility functions for interacting with Google Cloud Monitor
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
+
 from google.api_core import exceptions as google_exceptions
-from google.cloud import monitoring_v3
-from google.cloud import logging_v2
+from google.cloud import logging_v2, monitoring_v3
 
 SEVERITIES_LIST = ["INFO", "DEFAULT", "WARNING", "NOTICE", "DEBUG", "ERROR"]
 
