@@ -7,6 +7,10 @@ import warnings
 from pathlib import Path
 
 from dotenv import load_dotenv
+
+# Load environment variables from .env file BEFORE importing agent
+load_dotenv(Path(__file__).parent / ".env")
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,9 +29,6 @@ logger = logging.getLogger(__name__)
 
 # Suppress Pydantic serialization warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
-
-# Load environment variables from .env file
-load_dotenv(Path(__file__).parent / ".env")
 
 # Application name constant
 APP_NAME = "bidi-demo"
