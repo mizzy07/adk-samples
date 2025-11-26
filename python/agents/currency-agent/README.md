@@ -50,8 +50,8 @@ The new [A2A Python SDK](https://github.com/google-a2a/a2a-python) is used to cr
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/jackwotherspoon/currency-agent.git
-cd currency-agent
+git clone https://github.com/google/adk-samples.git
+cd adk-samples/python/agents/currency-agent
 ```
 
 2. Install [uv](https://docs.astral.sh/uv/getting-started/installation) (used to manage dependencies):
