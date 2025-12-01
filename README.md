@@ -53,6 +53,7 @@ To learn more, check out the [ADK Documentation](https://google.github.io/adk-do
 │   │   ├── safety-plugins
 │   │   ├── short-movie-agents
 │   │   ├── software-bug-assistant
+│   │   ├── story_teller
 │   │   ├── travel-concierge
 │   │   └── README.md
 │   └── README.md
