@@ -28,7 +28,7 @@ ag-ui-install:
 	@echo "Installing AG-UI backend dependencies..."
 	pip install -r app/frontend/backend/requirements.txt
 	@echo "Installing AG-UI frontend dependencies..."
-	cd app/frontend && npm install --legacy-peer-deps
+	cd app/frontend && npm install
 	@if [ ! -f app/frontend/.env.local ]; then \
 		cp app/frontend/.env.local.example app/frontend/.env.local; \
 		echo "Created app/frontend/.env.local from example"; \
