@@ -395,6 +395,33 @@ button {
   letter-spacing: 0.5px;
 }
 
+.console-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.console-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: #999999;
+  cursor: pointer;
+  user-select: none;
+}
+
+.console-checkbox input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: #4285f4;
+}
+
+.console-checkbox span {
+  white-space: nowrap;
+}
+
 .console-clear-btn {
   padding: 0.375rem 0.75rem;
   font-size: 0.75rem;
