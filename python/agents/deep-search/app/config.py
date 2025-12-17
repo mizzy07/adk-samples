@@ -51,7 +51,7 @@ class ResearchConfiguration:
     """
 
     critic_model: str = "gemini-3-pro-preview"
-    worker_model: str = "gemini-3-pro-preview"
+    worker_model: str = "gemini-3-flash-preview"
     max_search_iterations: int = 5
 
 
