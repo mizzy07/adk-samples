@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from google.adk.agents import Agent
-from . import prompt
 from podcast_transcript_agent.models.podcast_plan import PodcastEpisodePlan
 
+from . import prompt
 
 podcast_episode_planner_agent = Agent(
     name="podcast_episode_planner_agent",
@@ -23,5 +23,5 @@ podcast_episode_planner_agent = Agent(
     description="Plans the podcast episode based on extracted topics",
     instruction=prompt.PODCAST_EPISODE_PLANNER_PROMPT,
     output_schema=PodcastEpisodePlan,
-    output_key="podcast_episode_plan"
+    output_key="podcast_episode_plan",
 )

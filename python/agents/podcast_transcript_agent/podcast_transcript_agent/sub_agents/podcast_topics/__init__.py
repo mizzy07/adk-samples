@@ -12,7 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .agent import podcast_topics_agent
-
-
-
+from .agent import podcast_topics_agent  # noqa: F401

@@ -13,8 +13,9 @@
 # limitations under the License.
 
 from google.adk.agents import SequentialAgent
-from .sub_agents.podcast_topics import podcast_topics_agent
+
 from .sub_agents.podcast_episode_planner import podcast_episode_planner_agent
+from .sub_agents.podcast_topics import podcast_topics_agent
 from .sub_agents.podcast_transcript_writer import (
     podcast_transcript_writer_agent,
 )
