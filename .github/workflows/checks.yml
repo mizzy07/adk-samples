@@ -1,0 +1,52 @@
+name: ✅ Checks
+
+on:
+  pull_request:
+    # Trigger on any PR to ensure all code is standard
+    branches: ["main"]
+    # Optimization: Only run if Python or config files change
+    paths:
+      - "python/agents/**"
+      - "pyproject.toml"
+      - ".github/workflows/checks.yml"
+
+permissions:
+  contents: write  # Required for auto-committing fixes
+
+jobs:
+  ruff-lint-and-format:
+    name: Ruff Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # Fetch all history so Ruff can determine changed files if needed
+          fetch-depth: 0
+
+      - name: Install uv
+        run: curl -LsSf https://astral-sh/uv/install.sh | sh
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Run Ruff Format
+        run: uv run ruff format .
+
+      - name: Run Ruff Check WITHOUT Fix
+        # Running with --fix will resolve the ruff errors automatically
+        run: uv run ruff check .
+
+      - name: Commit and Push Fixes
+        # This step only runs if Ruff actually changed files
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config --global user.name 'github-actions[bot]'
+            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            git add .
+            git commit -m "chore: auto-fix linting and formatting with ruff"
+            git push
+          else
+            echo "No changes detected by Ruff."
+          fi
