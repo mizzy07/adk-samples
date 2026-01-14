@@ -3,7 +3,7 @@ import pytest
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.runners import Runner
 from google.adk.sessions.in_memory_session_service import InMemorySessionService
-from google.generativeai.protos import types
+from google.genai import types
 from rag.agent import root_agent
 
 def test_agent_stream(monkeypatch) -> None:
