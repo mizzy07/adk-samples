@@ -5,7 +5,7 @@ import subprocess
 import time
 import pytest
 import requests
-from unittest.mock import patch
+import requests_mock
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -18,12 +18,16 @@ HEADERS = {"Content-Type": "application/json", "Accept": "text/event-stream"}
 
 
 @pytest.fixture(scope="module")
-def server_fixture():
+def server_fixture(requests_mock):
     """Fixture to start and stop the server."""
+    # Mock the Google AI Platform endpoint to avoid real API calls
+    requests_mock.post("https://aiplatform.googleapis.com/v1beta1/projects/adk-devops/locations/global/publishers/google/models/gemini-2.0-flash-001:streamGenerateContent", 
+    json={"candidates": [{"content": {"parts": [{"text": "This is a mocked response."}], "role": "model"}}]})
+
+
     # Set environment variables for the subprocess
     env = os.environ.copy()
     env["RAG_CORPUS"] = "projects/mock-project/locations/us-central1/ragCorpora/mock-corpus"
-    env["PYTEST_RUNNING"] = "true"
 
     server_process = subprocess.Popen(
         [
@@ -89,3 +93,5 @@ def test_chat_stream(server_fixture: subprocess.Popen[str]) -> None:
                 event = json.loads(event_json)
                 events.append(event)
     assert len(events) > 0, "Expected at least one event"
+
+

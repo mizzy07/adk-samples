@@ -6,17 +6,18 @@ from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.genai import types
 from rag.agent import root_agent
 
+async def mock_generate_content_async(*args, **kwargs):
+    yield types.GenerateContentResponse.from_dict({'candidates': [{'content': {'parts': [{'text': 'This is a mocked response.'}], 'role': 'model'}}]})
+
 def test_agent_stream(monkeypatch, mocker) -> None:
     """
     Integration test for the agent stream functionality.
     Tests that the agent returns valid streaming responses.
     """
     monkeypatch.setenv("RAG_CORPUS", "projects/mock-project/locations/us-central1/ragCorpora/mock-corpus")
-
-    # Mock the runner's run method to avoid actual API calls
     mocker.patch(
-        "google.adk.runners.Runner.run",
-        return_value=[mocker.MagicMock()]
+        "google.adk.models.google_llm.GoogleLLM.generate_content_async",
+        new=mock_generate_content_async
     )
 
     session_service = InMemorySessionService()
@@ -37,3 +38,4 @@ def test_agent_stream(monkeypatch, mocker) -> None:
         )
     )
     assert len(events) > 0, "Expected at least one message"
+

@@ -42,6 +42,7 @@ dev = [
     "arize>=7.36.0",
     "llama-index>=0.12",
     "google-genai",
+    "requests-mock",
 ]
 
 [tool.ruff]
