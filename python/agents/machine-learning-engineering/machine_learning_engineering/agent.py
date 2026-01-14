@@ -2,11 +2,11 @@
 
 import json
 import os
-from typing import Optional
 
 from google.adk import agents
 from google.adk.agents import callback_context as callback_context_module
 from google.genai import types
+
 from machine_learning_engineering import prompt
 from machine_learning_engineering.sub_agents.ensemble import (
     agent as ensemble_agent_module,
@@ -24,7 +24,7 @@ from machine_learning_engineering.sub_agents.submission import (
 
 def save_state(
     callback_context: callback_context_module.CallbackContext,
-) -> Optional[types.Content]:
+) -> types.Content | None:
     """Prints the current state of the callback context."""
     workspace_dir = callback_context.state.get("workspace_dir", "")
     task_name = callback_context.state.get("task_name", "")

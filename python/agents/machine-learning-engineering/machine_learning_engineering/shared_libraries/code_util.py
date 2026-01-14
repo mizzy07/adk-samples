@@ -28,7 +28,7 @@ def run_python_code(
     try:
         result = subprocess.run(
             ["python", py_filepath],
-            cwd=run_cwd,
+            check=False, cwd=run_cwd,
             capture_output=True,
             text=True,
             timeout=exec_timeout,
@@ -167,7 +167,10 @@ def get_run_code_condition(
     if agent_name.startswith("ensemble_plan_implement"):
         if "debug_agent" not in agent_name:
             return True
-        if "Final Validation Performance" in raw_code and "exit()" not in raw_code:
+        if (
+            "Final Validation Performance" in raw_code
+            and "exit()" not in raw_code
+        ):
             return True
     elif agent_name.startswith("ablation"):
         if "debug_agent" not in agent_name:
@@ -183,7 +186,9 @@ def get_run_code_condition(
             return True
         if "debug_agent" in agent_name and "exit()" not in raw_code:
             return True
-    elif "Final Validation Performance" in raw_code and "exit()" not in raw_code:
+    elif (
+        "Final Validation Performance" in raw_code and "exit()" not in raw_code
+    ):
         return True
     return False
 
@@ -251,7 +256,9 @@ def evaluate_code(
         else:
             if result_dict.get("returncode", 1) == 0:
                 try:
-                    score = extract_performance_from_text(result_dict.get("stdout", ""))
+                    score = extract_performance_from_text(
+                        result_dict.get("stdout", "")
+                    )
                     score = float(score)
                 except Exception:
                     score = 1e9 if lower else 0
@@ -265,4 +272,3 @@ def evaluate_code(
         suffix=suffix,
     )
     callback_context.state[code_execution_result_state_key] = result_dict
-    return None

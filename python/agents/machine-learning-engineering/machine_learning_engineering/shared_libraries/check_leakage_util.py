@@ -2,13 +2,13 @@
 
 import functools
 import json
-from typing import Optional
 
 from google.adk import agents
 from google.adk.agents import callback_context as callback_context_module
 from google.adk.models import llm_request as llm_request_module
 from google.adk.models import llm_response as llm_response_module
 from google.genai import types
+
 from machine_learning_engineering.shared_libraries import (
     code_util,
     common_util,
@@ -55,7 +55,9 @@ def parse_leakage_status(text: str) -> tuple[str, str]:
     text = text[start_idx:end_idx]
     result = json.loads(text)[0]
     leakage_status = result["leakage_status"]
-    code_block = result["code_block"].replace("```python", "").replace("```", "")
+    code_block = (
+        result["code_block"].replace("```python", "").replace("```", "")
+    )
     return leakage_status, code_block
 
 
@@ -63,7 +65,7 @@ def update_extract_status(
     callback_context: callback_context_module.CallbackContext,
     llm_response: llm_response_module.LlmResponse,
     prefix: str,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Updates the status of extraction."""
     response_text = common_util.get_text_from_response(llm_response)
     agent_name = callback_context.agent_name
@@ -109,7 +111,7 @@ def check_extract_status(
     callback_context: callback_context_module.CallbackContext,
     llm_request: llm_request_module.LlmRequest,
     prefix: str,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Checks the status of extraction."""
     suffix = code_util.get_updated_suffix(callback_context=callback_context)
     extract_status_key = code_util.get_name_with_prefix_and_suffix(
@@ -133,10 +135,12 @@ def replace_leakage_code(
     callback_context: callback_context_module.CallbackContext,
     llm_response: llm_response_module.LlmResponse,
     prefix: str,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Replace the code block that has the data leakage issue."""
     response_text = common_util.get_text_from_response(llm_response)
-    refined_code_block = response_text.replace("```python", "").replace("```", "")
+    refined_code_block = response_text.replace("```python", "").replace(
+        "```", ""
+    )
     agent_name = callback_context.agent_name
     suffix = code_util.get_updated_suffix(callback_context=callback_context)
     leakage_block_key = code_util.get_name_with_prefix_and_suffix(
@@ -160,7 +164,7 @@ def check_data_leakage(
     callback_context: callback_context_module.CallbackContext,
     llm_request: llm_request_module.LlmRequest,
     prefix: str,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Checks if the code has the data leakage issue."""
     suffix = code_util.get_updated_suffix(callback_context=callback_context)
     leakage_status_key = code_util.get_name_with_prefix_and_suffix(

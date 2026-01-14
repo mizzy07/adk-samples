@@ -2,7 +2,6 @@
 
 import os
 import shutil
-from typing import Optional
 
 import numpy as np
 from google.adk import agents
@@ -10,6 +9,7 @@ from google.adk.agents import callback_context as callback_context_module
 from google.adk.models import llm_request as llm_request_module
 from google.adk.models import llm_response as llm_response_module
 from google.genai import types
+
 from machine_learning_engineering.shared_libraries import (
     common_util,
     config,
@@ -20,7 +20,7 @@ from machine_learning_engineering.sub_agents.ensemble import prompt
 
 def update_ensemble_loop_states(
     callback_context: callback_context_module.CallbackContext,
-) -> Optional[types.Content]:
+) -> types.Content | None:
     """Updates ensemble loop states."""
     callback_context.state["ensemble_iter"] += 1
     return None
@@ -28,7 +28,7 @@ def update_ensemble_loop_states(
 
 def init_ensemble_loop_states(
     callback_context: callback_context_module.CallbackContext,
-) -> Optional[types.Content]:
+) -> types.Content | None:
     """Initializes ensemble loop states."""
     callback_context.state["ensemble_iter"] = 0
     return None
@@ -37,7 +37,7 @@ def init_ensemble_loop_states(
 def get_init_ensemble_plan(
     callback_context: callback_context_module.CallbackContext,
     llm_response: llm_response_module.LlmResponse,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Gets the initial plan to ensemble solutions."""
     response_text = common_util.get_text_from_response(llm_response)
     callback_context.state["ensemble_plans"] = [response_text]
@@ -47,7 +47,7 @@ def get_init_ensemble_plan(
 def check_ensemble_plan_implement_finish(
     callback_context: callback_context_module.CallbackContext,
     llm_request: llm_request_module.LlmRequest,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Checks if the ensemble plan implement is finished."""
     ensemble_iter = callback_context.state.get("ensemble_iter", 0)
     result_dict = callback_context.state.get(
@@ -67,7 +67,7 @@ def check_ensemble_plan_implement_finish(
 def get_refined_ensemble_plan(
     callback_context: callback_context_module.CallbackContext,
     llm_response: llm_response_module.LlmResponse,
-) -> Optional[llm_response_module.LlmResponse]:
+) -> llm_response_module.LlmResponse | None:
     """Gets the refined ensemble plan from the response."""
     response_text = common_util.get_text_from_response(llm_response)
     callback_context.state["ensemble_plans"].append(response_text)
@@ -83,9 +83,7 @@ def get_init_ensemble_plan_agent_instruction(
     python_solutions = []
     for task_id in range(1, num_solutions + 1):
         code = context.state.get(f"train_code_{outer_loop_round}_{task_id}", "")
-        formatted_str = "# Python Solution {}\n```python\n{}\n```\n".format(
-            task_id, code
-        )
+        formatted_str = f"# Python Solution {task_id}\n```python\n{code}\n```\n"
         python_solutions.append(formatted_str)
     instruction = prompt.INIT_ENSEMBLE_PLAN_INSTR.format(
         num_solutions=num_solutions,
@@ -121,9 +119,7 @@ def get_ensemble_plan_refinement_instruction(
     python_solutions = []
     for task_id in range(1, num_solutions + 1):
         code = context.state.get(f"train_code_{outer_loop_round}_{task_id}", "")
-        formatted_str = "# Python Solution {}\n```python\n{}\n```\n".format(
-            task_id, code
-        )
+        formatted_str = f"# Python Solution {task_id}\n```python\n{code}\n```\n"
         python_solutions.append(formatted_str)
     return prompt.ENSEMBLE_PLAN_REFINE_INSTR.format(
         num_solutions=num_solutions,
@@ -142,9 +138,7 @@ def get_ensemble_plan_implement_agent_instruction(
     python_solutions = []
     for task_id in range(1, num_solutions + 1):
         code = context.state.get(f"train_code_{outer_loop_round}_{task_id}", "")
-        formatted_str = "# Python Solution {}\n```python\n{}\n```\n".format(
-            task_id, code
-        )
+        formatted_str = f"# Python Solution {task_id}\n```python\n{code}\n```\n"
         python_solutions.append(formatted_str)
     prev_plans = context.state.get("ensemble_plans", [""])
     return prompt.ENSEMBLE_PLAN_IMPLEMENT_INSTR.format(
@@ -156,7 +150,7 @@ def get_ensemble_plan_implement_agent_instruction(
 
 def create_workspace(
     callback_context: callback_context_module.CallbackContext,
-) -> Optional[types.Content]:
+) -> types.Content | None:
     """Creates workspace."""
     data_dir = callback_context.state.get("data_dir", "")
     workspace_dir = callback_context.state.get("workspace_dir", "")
@@ -165,12 +159,16 @@ def create_workspace(
     if os.path.exists(run_cwd):
         shutil.rmtree(run_cwd)
     # make required directories
-    os.makedirs(os.path.join(workspace_dir, task_name, "ensemble"), exist_ok=True)
     os.makedirs(
-        os.path.join(workspace_dir, task_name, "ensemble", "input"), exist_ok=True
+        os.path.join(workspace_dir, task_name, "ensemble"), exist_ok=True
     )
     os.makedirs(
-        os.path.join(workspace_dir, task_name, "ensemble", "final"), exist_ok=True
+        os.path.join(workspace_dir, task_name, "ensemble", "input"),
+        exist_ok=True,
+    )
+    os.makedirs(
+        os.path.join(workspace_dir, task_name, "ensemble", "final"),
+        exist_ok=True,
     )
     # copy files to input directory
     files = os.listdir(os.path.join(data_dir, task_name))
@@ -178,14 +176,15 @@ def create_workspace(
         if os.path.isdir(os.path.join(data_dir, task_name, file)):
             shutil.copytree(
                 os.path.join(data_dir, task_name, file),
-                os.path.join(workspace_dir, task_name, "ensemble", "input", file),
+                os.path.join(
+                    workspace_dir, task_name, "ensemble", "input", file
+                ),
             )
-        else:
-            if "answer" not in file:
-                common_util.copy_file(
-                    os.path.join(data_dir, task_name, file),
-                    os.path.join(workspace_dir, task_name, "ensemble", "input"),
-                )
+        elif "answer" not in file:
+            common_util.copy_file(
+                os.path.join(data_dir, task_name, file),
+                os.path.join(workspace_dir, task_name, "ensemble", "input"),
+            )
     return None
 
 

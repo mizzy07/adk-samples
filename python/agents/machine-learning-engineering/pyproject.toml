@@ -1,63 +1,57 @@
-[tool.poetry]
-name = "machine_learning_engineering"
-version = "0.1"
+[project]
+name = "machine-learning-engineering"
+version = "0.1.0"
 description = "MLE-STAR: A novel machine learning engineering (MLE) agent to automate the implementation of ML models."
-authors = ["Jiefeng Chen <jiefengc@google.com>", "Raj Sinha <sinharaj@google.com", "Jaehyun Nam <jaehyunnam@google.com>", "Jinsung Yoon <jinsungyoon@google.com>"]
-license = "Apache License 2.0"
+authors = [
+    { name = "Jiefeng Chen", email = "jiefengc@google.com" },
+    { name = "Raj Sinha", email = "sinharaj@google.com" },
+    { name = "Jaehyun Nam", email = "jaehyunnam@google.com" },
+    { name = "Jinsung Yoon", email = "jinsungyoon@google.com" }
+]
+license = {text = "Apache License 2.0"}
 readme = "README.md"
+requires-python = ">=3.12"
 
-[tool.poetry.dependencies]
-python = "^3.12"
-google-adk = "^1.5.0"
-google-genai = "^1.9.0"
-pydantic = "^2.10.6"
-python-dotenv = "^1.0.1"
-google-cloud-aiplatform = { version = "^1.93", extras = [
-    "adk",
-    "agent-engines",
-] }
-numpy = "^2.2.3"
-pandas = "^2.3.1"
-scikit-learn = "^1.7.1"
-# The CPU version of PyTorch is installed here. Change this is you need GPUs, or
-# want to use PyTorch on a different hardware architecture or CPU.
-# (https://download.pytorch.org/whl)
-torch = {version = "^2.7.1", source = "pytorch_cpu"}
-[tool.poetry.group.dev]
-optional = true
+dependencies = [
+    "google-adk>=1.5.0",
+    "google-genai>=1.9.0",
+    "pydantic>=2.10.6",
+    "python-dotenv>=1.0.1",
+    "google-cloud-aiplatform[adk,agent-engines]>=1.93.0",
+    "numpy>=2.2.3",
+    "pandas>=2.3.1",
+    "scikit-learn>=1.7.1",
+    # Note: If using uv or pip, use --extra-index-url https://download.pytorch.org/whl/cpu 
+    # to ensure the CPU version of torch is prioritized.
+    "torch>=2.7.1",
+]
 
-[tool.poetry.group.dev.dependencies]
-google-adk = { extras = ["eval"], version = "^1.5.0" }
-google-cloud-aiplatform = { version = "^1.93", extras = [
-    "adk",
-    "agent-engines",
-    "evaluation",
-] }
-pytest = "^8.3.5"
-black = "^25.1.0"
-pytest-asyncio = "^0.26.0"
-numpy = "^2.2.3"
-pandas = "^2.3.1"
-scikit-learn = "^1.7.1"
-# The CPU version of PyTorch is installed here. Change this is you need GPUs, or
-# want to use PyTorch on a different hardware architecture or CPU.
-# (https://download.pytorch.org/whl)
-torch = {version = "^2.7.1", source = "pytorch_cpu"}
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+    "google-adk[eval]>=1.5.0",
+    "google-cloud-aiplatform[evaluation]>=1.93.0",
+]
+deployment = [
+    "absl-py>=2.2.1",
+]
 
-[tool.poetry.group.deployment]
-optional = true
+[tool.ruff]
+extend = "../../../pyproject.toml"
 
-[tool.poetry.group.deployment.dependencies]
-absl-py = "^2.2.1"
+[tool.ruff.lint]
+ignore = ["C901", "PLR0911", "PLR0912", "PLR0915"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["machine_learning_engineering"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
-[[tool.poetry.source]]
-name = "pytorch_cpu"
-url = "https://download.pytorch.org/whl/cpu"
-priority = "explicit"
-
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
