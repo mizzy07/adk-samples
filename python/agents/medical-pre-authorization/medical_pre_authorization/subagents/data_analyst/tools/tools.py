@@ -57,7 +57,8 @@ def store_pdf(pdf_text: str) -> str:
         for paragraph_text in pdf_text.split("\n\n"):
             if paragraph_text.strip():
                 p = Paragraph(
-                    paragraph_text.strip().replace("\n", "<br/>"), styles["Normal"]
+                    paragraph_text.strip().replace("\n", "<br/>"),
+                    styles["Normal"],
                 )
                 story.append(p)
                 # The explicit Spacer line below was removed to reduce excessive blank lines.

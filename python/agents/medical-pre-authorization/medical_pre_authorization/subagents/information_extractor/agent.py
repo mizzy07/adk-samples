@@ -30,5 +30,9 @@ information_extractor = Agent(
    by the user.""",
     instruction=INFORMATION_EXTRACTOR_INSTRUCTION,
     generate_content_config=types.GenerateContentConfig(temperature=0.2),
-    tools=[extract_treatment_name, extract_policy_information, extract_medical_details],
+    tools=[
+        extract_treatment_name,
+        extract_policy_information,
+        extract_medical_details,
+    ],
 )

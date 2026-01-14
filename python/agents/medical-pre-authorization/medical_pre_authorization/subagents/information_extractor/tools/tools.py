@@ -51,7 +51,9 @@ def extract_treatment_name(user_query: str) -> str:
     Treatment Name:
     """
     contents = [
-        types.Content(role="user", parts=[types.Part.from_text(text=user_query)]),
+        types.Content(
+            role="user", parts=[types.Part.from_text(text=user_query)]
+        ),
     ]
     generate_content_config = types.GenerateContentConfig(
         temperature=1,
@@ -130,7 +132,9 @@ def extract_policy_information(policy_file: str, treatment_name: str) -> str:
     return summary_output
 
 
-def extract_medical_details(medical_report_file: str, treatment_name: str) -> str:
+def extract_medical_details(
+    medical_report_file: str, treatment_name: str
+) -> str:
     """
     Extracts all information related to a specific treatment from medical report pdf
     using the Gemini model

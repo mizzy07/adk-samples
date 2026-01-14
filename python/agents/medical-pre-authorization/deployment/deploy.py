@@ -17,9 +17,10 @@ import os
 import vertexai
 from absl import app, flags
 from dotenv import load_dotenv
-from medical_pre_authorization.agent import root_agent
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from medical_pre_authorization.agent import root_agent
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("project_id", None, "GCP project ID.")
@@ -79,10 +80,18 @@ def main(argv: list[str]) -> None:
     load_dotenv()
 
     project_id = (
-        FLAGS.project_id if FLAGS.project_id else os.getenv("GOOGLE_CLOUD_PROJECT")
+        FLAGS.project_id
+        if FLAGS.project_id
+        else os.getenv("GOOGLE_CLOUD_PROJECT")
     )
-    location = FLAGS.location if FLAGS.location else os.getenv("GOOGLE_CLOUD_LOCATION")
-    bucket = FLAGS.bucket if FLAGS.bucket else os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET")
+    location = (
+        FLAGS.location if FLAGS.location else os.getenv("GOOGLE_CLOUD_LOCATION")
+    )
+    bucket = (
+        FLAGS.bucket
+        if FLAGS.bucket
+        else os.getenv("GOOGLE_CLOUD_STORAGE_BUCKET")
+    )
 
     print(f"PROJECT: {project_id}")
     print(f"LOCATION: {location}")
@@ -95,7 +104,9 @@ def main(argv: list[str]) -> None:
         print("Missing required environment variable: GOOGLE_CLOUD_LOCATION")
         return
     elif not bucket:
-        print("Missing required environment variable: GOOGLE_CLOUD_STORAGE_BUCKET")
+        print(
+            "Missing required environment variable: GOOGLE_CLOUD_STORAGE_BUCKET"
+        )
         return
 
     vertexai.init(
