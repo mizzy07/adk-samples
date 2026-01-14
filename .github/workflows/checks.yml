@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Ruff Check WITHOUT Fix
         # Running with --fix will resolve the ruff errors automatically
-        run: uvx ruff check .
+        run: uvx ruff check --fix .
 
       - name: Commit and Push Fixes
         # This step only runs if Ruff actually changed files
