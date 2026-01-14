@@ -1,8 +1,8 @@
 import asyncio
 
+from blogger_agent.agent import root_agent
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
-from blogger_agent.agent import root_agent
 from google.genai import types as genai_types
 
 
@@ -31,11 +31,14 @@ async def main():
             user_id="test_user",
             session_id="test_session",
             new_message=genai_types.Content(
-                role="user", 
-                parts=[genai_types.Part.from_text(text=query)]
+                role="user", parts=[genai_types.Part.from_text(text=query)]
             ),
         ):
-            if event.is_final_response() and event.content and event.content.parts:
+            if (
+                event.is_final_response()
+                and event.content
+                and event.content.parts
+            ):
                 print(event.content.parts[0].text)
 
 

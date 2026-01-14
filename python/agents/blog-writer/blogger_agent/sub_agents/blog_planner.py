@@ -15,8 +15,8 @@
 from google.adk.agents import Agent, LoopAgent
 from google.adk.tools import google_search
 
-from ..config import config
 from ..agent_utils import suppress_output_callback
+from ..config import config
 from ..validation_checkers import OutlineValidationChecker
 
 blog_planner = Agent(
