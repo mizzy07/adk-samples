@@ -21,14 +21,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          # Fetch all history so Ruff can determine changed files if needed
           fetch-depth: 0
 
+      # FIX: Use the official setup action instead of a curl script
       - name: Install uv
-        run: curl -LsSf https://astral-sh/uv/install.sh | sh
-
-      - name: Set up Python
-        run: uv python install 3.13
+        uses: astral-sh/setup-uv@v5
+        with:
+          # This also handles Python installation for you
+          python-version: "3.13"
+          enable-cache: true
 
       - name: Run Ruff Format
         run: uv run ruff format .
