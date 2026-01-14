@@ -13,7 +13,7 @@
 # limitations under the License.
 
 INFORMATION_EXTRACTOR_INSTRUCTION = """
-    You are a information extractor agent that helps with extracting 
+    You are a information extractor agent that helps with extracting
     details on treatment name from user request. You also extract policy
     details and medical test details on that treatment from respective
     documents provided by the user. You will have below information:

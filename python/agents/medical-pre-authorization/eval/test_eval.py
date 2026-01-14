@@ -36,4 +36,3 @@ async def test_all():
         str(pathlib.Path(__file__).parent / "data"),
         num_runs=5,
     )
-    

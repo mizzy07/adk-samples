@@ -18,9 +18,9 @@ import textwrap
 
 import dotenv
 import pytest
-from medical_pre_authorization.agent import root_agent
 from google.adk.runners import InMemoryRunner
 from google.genai.types import Part, UserContent
+from medical_pre_authorization.agent import root_agent
 
 pytest_plugins = ("pytest_asyncio",)
 
@@ -59,4 +59,3 @@ async def test_happy_path():
     # The answer in the input is wrong, so we expect the agent to provided a
     # revised answer, and the correct answer should mention research.
     assert "pre-authorization agent" in response.lower()
-    
