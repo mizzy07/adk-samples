@@ -27,10 +27,11 @@ def add_padding_to_image(input_path, output_path):
         img = Image.open(input_path)
         width, height = img.size
 
+        aspect_ratio_error = 1e-6
         target_aspect_ratio = 9.0 / 16.0
         current_aspect_ratio = float(width) / float(height)
 
-        if abs(current_aspect_ratio - target_aspect_ratio) < 1e-6:
+        if abs(current_aspect_ratio - target_aspect_ratio) < aspect_ratio_error:
             img.save(output_path)
             return
 
@@ -49,7 +50,7 @@ def add_padding_to_image(input_path, output_path):
         new_img.paste(img, (paste_x, paste_y))
         new_img.save(output_path)
 
-    except (IOError, FileNotFoundError) as e:
+    except (OSError, FileNotFoundError) as e:
         logging.error("Error processing %s: %s", input_path, e)
 
 

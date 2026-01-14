@@ -17,7 +17,6 @@ import argparse
 import json
 import logging
 import sys
-from typing import List
 
 from google import genai
 from google.api_core import exceptions
@@ -34,14 +33,14 @@ class Product(BaseModel):
     description: str
     brand: str
     image_gcs_uri: str
-    search_tags: List[str]
+    search_tags: list[str]
     last_updated: str
 
 
 class ProductList(BaseModel):
     """A list of products."""
 
-    products: List[Product]
+    products: list[Product]
 
 
 def list_gcs_files(bucket_name, prefix):

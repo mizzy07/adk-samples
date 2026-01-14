@@ -21,7 +21,12 @@ import asyncio
 import json
 import logging
 import time
-from typing import Dict, List, Optional, Union
+from typing import Union
+
+from dotenv import load_dotenv
+from google import genai
+from google.adk.tools import ToolContext
+from google.genai import types
 
 from content_gen_agent.func_tools.select_product import select_product_from_bq
 from content_gen_agent.utils.evaluate_media import calculate_evaluation_score
@@ -31,10 +36,6 @@ from content_gen_agent.utils.gemini_utils import (
 )
 from content_gen_agent.utils.images import ensure_image_artifact
 from content_gen_agent.utils.storytelling import STORYTELLING_INSTRUCTIONS
-from dotenv import load_dotenv
-from google import genai
-from google.adk.tools import ToolContext
-from google.genai import types
 
 # Configure logging
 logging.basicConfig(
@@ -59,10 +60,10 @@ async def generate_storyline(
     tool_context: ToolContext,
     company_name: str,
     num_images: int = 5,
-    photo_filenames: Optional[List[str]] = None,
+    photo_filenames: list[str] | None = None,
     style_preference: str = "photorealistic",
-    user_provided_asset_sheet_filename: Optional[str] = None,
-) -> Dict[str, Union[Optional[str], list[Dict[str, str]]]]:
+    user_provided_asset_sheet_filename: str | None = None,
+) -> dict[str, str | None | list[dict[str, str]]]:
     """Generates a storyline, visual style guide, and asset sheet.
 
     Args:
@@ -104,13 +105,14 @@ async def generate_storyline(
     )
 
     try:
-        image_parts, final_photo_filenames = (
-            await _process_asset_sheet_input_images(
-                tool_context,
-                product,
-                photo_filenames,
-                user_provided_asset_sheet_filename,
-            )
+        (
+            image_parts,
+            final_photo_filenames,
+        ) = await _process_asset_sheet_input_images(
+            tool_context,
+            product,
+            photo_filenames,
+            user_provided_asset_sheet_filename,
         )
     except ValueError as e:
         return {"status": "failed", "detail": str(e)}
@@ -168,8 +170,8 @@ async def generate_storyline(
 async def _process_asset_sheet_input_images(
     tool_context: ToolContext,
     product: str,
-    photo_filenames: Optional[List[str]] = None,
-    user_provided_asset_sheet_filename: Optional[str] = None,
+    photo_filenames: list[str] | None = None,
+    user_provided_asset_sheet_filename: str | None = None,
 ) -> tuple[list[types.Part], list[str]]:
     """
     tool_context (ToolContext): The context for saving artifacts.
@@ -185,8 +187,8 @@ async def _process_asset_sheet_input_images(
       photo_filenames is ignored. filename is assumed to be a Google Cloud
       Storage URI if beginning with "gs://".
     """
-    image_parts: List[types.Part] = []
-    final_photo_filenames: List[str] = []
+    image_parts: list[types.Part] = []
+    final_photo_filenames: list[str] = []
 
     # If we're using a user-provided asset sheet
     if user_provided_asset_sheet_filename:
@@ -234,8 +236,8 @@ def _generate_storyline_text(
     num_images: int,
     style_guide: str,
     company_name: str,
-    image_parts: Optional[List[genai.types.Part]] = None,
-) -> Dict[str, Union[str, Dict[str, list[Union[Dict[str, str], str]]]]]:
+    image_parts: list[genai.types.Part] | None = None,
+) -> dict[str, str | dict[str, list[dict[str, str] | str]]]:
     """Generates the storyline and visual style guide text.
 
     Args:
@@ -328,7 +330,7 @@ def _generate_storyline_text(
 
 async def _save_product_photo_artifact(
     product: str, tool_context: ToolContext
-) -> Optional[str]:
+) -> str | None:
     """
     Fetches the product's image URI from BigQuery, downloads it
     from GCS, and saves it as an artifact.
@@ -353,8 +355,8 @@ async def _save_product_photo_artifact(
 
 
 def _process_visual_style_guide(
-    visual_style_guide: Dict[str, List[Union[Dict[str, str], str]]],
-) -> Dict[str, str]:
+    visual_style_guide: dict[str, list[dict[str, str] | str]],
+) -> dict[str, str]:
     """Processes the visual style guide into formatted strings.
 
     Args:
@@ -365,7 +367,7 @@ def _process_visual_style_guide(
         A dictionary of processed descriptions.
     """
 
-    def format_list(items: List[Union[Dict[str, str], str]]) -> str:
+    def format_list(items: list[dict[str, str] | str]) -> str:
         processed = []
         for item in items:
             if isinstance(item, dict):
@@ -393,8 +395,8 @@ def _process_visual_style_guide(
 
 
 def _create_asset_sheet_prompt(
-    story_data: Dict[
-        str, Union[str, Dict[str, list[Union[Dict[str, str], str]]]]
+    story_data: dict[
+        str, str | dict[str, list[dict[str, str] | str]]
     ],
     style_guide: str,
 ) -> str:
@@ -417,9 +419,9 @@ def _create_asset_sheet_prompt(
 
 
 async def _generate_and_select_best_image(
-    contents: List[Union[str, "types.Part"]],
+    contents: list[Union[str, "types.Part"]],
     image_prompt: str,
-) -> Dict[str, Union[str, bytes]]:
+) -> dict[str, str | bytes]:
     """
     Generates multiple images and selects the best one based on evaluation.
     """
@@ -457,13 +459,13 @@ async def _generate_and_select_best_image(
 
 
 async def _generate_asset_sheet_image(
-    story_data: Dict[
-        str, Union[str, Dict[str, list[Union[Dict[str, str], str]]]]
+    story_data: dict[
+        str, str | dict[str, list[dict[str, str] | str]]
     ],
-    photo_filenames: List[str],
+    photo_filenames: list[str],
     tool_context: ToolContext,
     style_guide: str,
-) -> Union[str, Dict[str, str]]:
+) -> str | dict[str, str]:
     """Generates and evaluates asset sheet images, saving the best one.
 
     Args:
@@ -519,7 +521,7 @@ async def _generate_asset_sheet_image(
 async def _save_json_artifact(
     tool_context: ToolContext,
     name: str,
-    data: Dict[str, Union[Optional[str], dict, list]],
+    data: dict[str, str | None | dict | list],
 ) -> str:
     """Saves a JSON object as a text artifact.
 

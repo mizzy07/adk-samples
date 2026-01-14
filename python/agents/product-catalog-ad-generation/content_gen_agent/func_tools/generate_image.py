@@ -17,7 +17,12 @@ import asyncio
 import json
 import logging
 import os
-from typing import Awaitable, List, NotRequired, Optional, TypedDict
+from collections.abc import Awaitable
+from typing import NotRequired, TypedDict
+
+from dotenv import load_dotenv
+from google.adk.tools import ToolContext
+from google.genai import types
 
 from content_gen_agent.utils.evaluate_media import calculate_evaluation_score
 from content_gen_agent.utils.gemini_utils import (
@@ -28,9 +33,6 @@ from content_gen_agent.utils.images import (
     IMAGE_MIME_TYPE,
     ensure_image_artifact,
 )
-from dotenv import load_dotenv
-from google.adk.tools import ToolContext
-from google.genai import types
 
 # --- Configuration ---
 logging.basicConfig(
@@ -87,7 +89,7 @@ class ImageGenerationResult(TypedDict):
 
 async def generate_one_image(
     prompt: str,
-    input_images: List[types.Part],
+    input_images: list[types.Part],
     filename_prefix: str,
 ) -> ImageGenerationResult:
     """Generates a single image using Gemini, handling retries.
@@ -150,7 +152,7 @@ async def generate_one_image(
 
 
 async def _save_generated_images(
-    results: List[ImageGenerationResult], tool_context: ToolContext
+    results: list[ImageGenerationResult], tool_context: ToolContext
 ) -> None:
     """Saves generated images to the tool context."""
     save_tasks = []
@@ -190,13 +192,13 @@ def _create_image_generation_task(
 
 
 async def generate_images_from_storyline(
-    prompts: List[str],
+    prompts: list[str],
     tool_context: ToolContext,
-    scene_numbers: Optional[List[int]] = None,
+    scene_numbers: list[int] | None = None,
     logo_filename: str = LOGO_GCS_URI,
     asset_sheet_filename: str = ASSET_SHEET_FILENAME,
     logo_prompt_present: bool = True,
-) -> List[str]:
+) -> list[str]:
     """
     Generates images for a commercial storyboard based on a visual style guide.
 

@@ -18,7 +18,6 @@ import logging
 import os
 import tempfile
 import time
-from typing import Dict, List, Optional, Tuple
 
 from dotenv import load_dotenv
 from google import genai
@@ -43,7 +42,7 @@ VIDEO_CODEC = "libx264"
 GCS_VIDEO_FOLDER = "videos"
 
 
-def _get_storyline_schema(num_images: int) -> List[Dict]:
+def _get_storyline_schema(num_images: int) -> list[dict]:
     """Generates a storyline schema with a dynamic number of scenes.
 
     Args:
@@ -88,13 +87,13 @@ def _get_datetime_folder_path() -> str:
     Returns:
         A path in the format 'videos/YYYY-MM-DD/HH-MM-SS/'.
     """
-    now = datetime.datetime.now(datetime.timezone.utc)
+    now = datetime.datetime.now(datetime.UTC)
     date_folder = now.strftime("%Y-%m-%d")
     time_folder = now.strftime("%H-%M-%S")
     return f"{GCS_VIDEO_FOLDER}/{date_folder}/{time_folder}/"
 
 
-def _upload_to_gcs(video_bytes: bytes, filename: str) -> Optional[str]:
+def _upload_to_gcs(video_bytes: bytes, filename: str) -> str | None:
     """Uploads a video to Google Cloud Storage.
 
     Args:
@@ -133,8 +132,8 @@ async def _load_single_clip(
     filename: str,
     tool_context: ToolContext,
     temp_dir: str,
-    storyline: List[Dict],
-) -> Optional[Tuple[VideoFileClip, str]]:
+    storyline: list[dict],
+) -> tuple[VideoFileClip, str] | None:
     """Loads and processes a single video clip artifact."""
     try:
         artifact = await tool_context.load_artifact(filename)
@@ -168,11 +167,11 @@ async def _load_single_clip(
 
 
 async def _load_and_process_video_clips(
-    video_files: List[str],
+    video_files: list[str],
     num_images: int,
     tool_context: ToolContext,
     temp_dir: str,
-) -> Tuple[List[VideoFileClip], List[str]]:
+) -> tuple[list[VideoFileClip], list[str]]:
     """Loads video artifacts, processes them, and returns clips.
 
     Args:
@@ -205,11 +204,11 @@ async def _load_and_process_video_clips(
 
 async def _load_and_process_audio_clips(
     audio_file: str,
-    voiceover_file: Optional[str],
+    voiceover_file: str | None,
     final_duration: float,
     tool_context: ToolContext,
     temp_dir: str,
-) -> Optional[CompositeAudioClip]:
+) -> CompositeAudioClip | None:
     """Loads and processes audio and voiceover files into a composite clip.
 
     Args:
@@ -257,12 +256,12 @@ async def _load_and_process_audio_clips(
 
 
 async def _combine_and_upload_video(
-    video_clips: List[VideoFileClip],
+    video_clips: list[VideoFileClip],
     audio_file: str,
-    voiceover_file: Optional[str],
+    voiceover_file: str | None,
     tool_context: ToolContext,
     temp_dir: str,
-) -> Optional[Dict[str, str]]:
+) -> dict[str, str] | None:
     """Combines video clips with audio and uploads the result."""
     try:
         final_clip = concatenate_videoclips(video_clips, method="compose")
@@ -304,12 +303,12 @@ async def _combine_and_upload_video(
 
 
 async def combine(
-    video_files: List[str],
+    video_files: list[str],
     audio_file: str,
     num_images: int,
     tool_context: ToolContext,
-    voiceover_file: Optional[str] = None,
-) -> Optional[Dict[str, str]]:
+    voiceover_file: str | None = None,
+) -> dict[str, str] | None:
     """Combines videos, audio, and voiceover into a single file.
 
     Args:

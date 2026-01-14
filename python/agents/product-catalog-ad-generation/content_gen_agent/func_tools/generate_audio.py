@@ -19,7 +19,7 @@ import logging
 import os
 import random
 import time
-from typing import Dict, List, Optional, Union
+from http import HTTPStatus
 
 import aiohttp
 import google.auth
@@ -44,7 +44,7 @@ LYRIA_LOCATION = "us-central1"
 
 async def generate_audio(
     audio_query: str, tool_context: ToolContext
-) -> Optional[Dict[str, str]]:
+) -> dict[str, str] | None:
     """Generates an audio clip using the Lyria model via REST API.
 
     Args:
@@ -100,7 +100,7 @@ async def generate_audio(
                 async with session.post(
                     url, headers=headers, json=payload
                 ) as resp:
-                    if resp.status == 200:
+                    if resp.status == HTTPStatus.OK:
                         data = await resp.json()
                         predictions = data.get("predictions")
                         if (
@@ -173,7 +173,7 @@ async def generate_audio(
 
 async def _generate_voiceover_content(
     prompt: str, text: str
-) -> Optional[bytes]:
+) -> bytes | None:
     """Synthesizes speech using Gemini-TTS.
 
     Args:
@@ -209,7 +209,7 @@ async def generate_voiceover(
     prompt: str,
     text: str,
     tool_context: ToolContext,
-) -> Optional[Dict[str, str]]:
+) -> dict[str, str] | None:
     """Generates a voiceover and saves it as an artifact.
 
     Args:
@@ -231,7 +231,7 @@ async def generate_voiceover(
             types.Part.from_bytes(data=audio_content, mime_type="audio/mp3"),
         )
         return {"name": filename}
-    except IOError as e:
+    except OSError as e:
         logging.error("Error saving voiceover artifact: %s", e, exc_info=True)
         return None
 
@@ -242,7 +242,7 @@ async def generate_audio_and_voiceover(
     voiceover_prompt: str,
     voiceover_text: str,
     generation_mode: str = "both",
-) -> Dict[str, Union[str, List[str]]]:
+) -> dict[str, str | list[str]]:
     """
     Generates a background audio track, a voiceover, or both in a
     single function call.
@@ -286,7 +286,7 @@ async def generate_audio_and_voiceover(
         return {"failures": [f"Invalid generation_mode: {generation_mode}"]}
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
-    response: Dict[str, Union[str, List[str]]] = {"failures": []}
+    response: dict[str, str | list[str]] = {"failures": []}
     result_index = 0
 
     if generation_mode in ["audio", "both"]:

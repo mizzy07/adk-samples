@@ -15,15 +15,16 @@
 model."""
 
 import logging
-from typing import Literal, Optional
+from typing import Literal
 
-from content_gen_agent.utils.evaluation_prompts import (
-    get_image_evaluation_prompt,
-)
 from google import genai
 from google.api_core import exceptions as api_exceptions
 from google.genai import types
 from pydantic import BaseModel
+
+from content_gen_agent.utils.evaluation_prompts import (
+    get_image_evaluation_prompt,
+)
 
 # --- Configuration ---
 logging.basicConfig(
@@ -71,7 +72,7 @@ def _get_internal_prompt(mime_type: str, evaluation_criteria: str) -> str:
 
 async def evaluate_media(
     media_bytes: bytes, mime_type: str, evaluation_criteria: str
-) -> Optional[EvalResult]:
+) -> EvalResult | None:
     """Performs a quality assurance check on media bytes.
 
     Args:
@@ -109,7 +110,7 @@ async def evaluate_media(
 
 
 def calculate_evaluation_score(
-    evaluation_result: Optional[EvalResult],
+    evaluation_result: EvalResult | None,
 ) -> int:
     """Calculates a score based on the evaluation result.
 
