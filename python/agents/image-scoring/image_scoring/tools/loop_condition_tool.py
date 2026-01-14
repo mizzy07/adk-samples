@@ -33,10 +33,15 @@ def check_condition_and_escalate_tool(tool_context: ToolContext) -> dict:
         tool_context.actions.escalate = True
         response_message += "Max iterations reached, stopping loop."
     else:
-        print("  Condition not met and max iterations not reached. Loop will continue.")
+        print(
+            "  Condition not met and max iterations not reached. Loop will continue."
+        )
         response_message += "Loop continues."
 
-    return {"status": "Evaluated scoring condition", "message": response_message}
+    return {
+        "status": "Evaluated scoring condition",
+        "message": response_message,
+    }
 
 
 check_tool_condition = FunctionTool(func=check_condition_and_escalate_tool)

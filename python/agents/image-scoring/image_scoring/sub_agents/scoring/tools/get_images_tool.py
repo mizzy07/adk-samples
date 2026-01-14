@@ -3,7 +3,6 @@ from google.adk.tools import ToolContext
 
 async def get_image(tool_context: ToolContext):
     try:
-
         artifact_name = (
             f"generated_image_{tool_context.state.get('loop_iteration', 0)}.png"
         )
@@ -16,5 +15,5 @@ async def get_image(tool_context: ToolContext):
     except Exception as e:
         return {
             "status": "error",
-            "message": f"Error loading artifact {artifact_name}: {str(e)}",
+            "message": f"Error loading artifact {artifact_name}: {e!s}",
         }

@@ -9,14 +9,14 @@ from google.genai import types
 from .... import config
 
 client = genai.Client(
-    vertexai=True, project=os.environ.get("GOOGLE_CLOUD_PROJECT"), location="global"
+    vertexai=True,
+    project=os.environ.get("GOOGLE_CLOUD_PROJECT"),
+    location="global",
 )
 
 
 async def generate_images(imagen_prompt: str, tool_context: ToolContext):
-
     try:
-
         response = client.models.generate_images(
             model=config.IMAGEN_MODEL,
             prompt=imagen_prompt,
@@ -35,7 +35,9 @@ async def generate_images(imagen_prompt: str, tool_context: ToolContext):
                 artifact_name = f"generated_image_{counter}.png"
                 # call save to gcs function
                 if config.GCS_BUCKET_NAME:
-                    save_to_gcs(tool_context, image_bytes, artifact_name, counter)
+                    save_to_gcs(
+                        tool_context, image_bytes, artifact_name, counter
+                    )
 
                 # Save as ADK artifact (optional, if still needed by other ADK components)
                 report_artifact = types.Part.from_bytes(
@@ -52,7 +54,9 @@ async def generate_images(imagen_prompt: str, tool_context: ToolContext):
                 }
         else:
             # model_dump_json might not exist or be the best way to get error details
-            error_details = str(response)  # Or a more specific error field if available
+            error_details = str(
+                response
+            )  # Or a more specific error field if available
             print(f"No images generated. Response: {error_details}")
             return {
                 "status": "error",
@@ -63,7 +67,9 @@ async def generate_images(imagen_prompt: str, tool_context: ToolContext):
         return {"status": "error", "message": f"No images generated. {e}"}
 
 
-def save_to_gcs(tool_context: ToolContext, image_bytes, filename: str, counter: str):
+def save_to_gcs(
+    tool_context: ToolContext, image_bytes, filename: str, counter: str
+):
     # --- Save to GCS ---
     storage_client = storage.Client()  # Initialize GCS client
     bucket_name = config.GCS_BUCKET_NAME
@@ -85,7 +91,6 @@ def save_to_gcs(tool_context: ToolContext, image_bytes, filename: str, counter: 
         tool_context.state["generated_image_gcs_uri_" + counter] = gcs_uri
 
     except Exception as e_gcs:
-
         # Decide if this is a fatal error for the tool
         return {
             "status": "error",

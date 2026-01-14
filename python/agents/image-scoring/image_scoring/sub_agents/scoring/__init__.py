@@ -1,1 +1,1 @@
-from .scoring_agent import scoring_images_prompt  # noqa: F401
+from .scoring_agent import scoring_images_prompt
