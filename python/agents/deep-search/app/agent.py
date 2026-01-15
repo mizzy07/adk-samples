@@ -57,7 +57,9 @@ class Feedback(BaseModel):
 
 
 # --- Callbacks ---
-def collect_research_sources_callback(callback_context: CallbackContext) -> None:
+def collect_research_sources_callback(
+    callback_context: CallbackContext,
+) -> None:
     """Collects and organizes web-based research sources and their supported claims from agent events.
 
     This function processes the agent's `session.events` to extract web source details (URLs,
@@ -74,7 +76,10 @@ def collect_research_sources_callback(callback_context: CallbackContext) -> None
     sources = callback_context.state.get("sources", {})
     id_counter = len(url_to_short_id) + 1
     for event in session.events:
-        if not (event.grounding_metadata and event.grounding_metadata.grounding_chunks):
+        if not (
+            event.grounding_metadata
+            and event.grounding_metadata.grounding_chunks
+        ):
             continue
         chunks_info = {}
         for idx, chunk in enumerate(event.grounding_metadata.grounding_chunks):
@@ -106,9 +111,13 @@ def collect_research_sources_callback(callback_context: CallbackContext) -> None
                     if chunk_idx in chunks_info:
                         short_id = chunks_info[chunk_idx]
                         confidence = (
-                            confidence_scores[i] if i < len(confidence_scores) else 0.5
+                            confidence_scores[i]
+                            if i < len(confidence_scores)
+                            else 0.5
                         )
-                        text_segment = support.segment.text if support.segment else ""
+                        text_segment = (
+                            support.segment.text if support.segment else ""
+                        )
                         sources[short_id]["supported_claims"].append(
                             {
                                 "text_segment": text_segment,
@@ -140,9 +149,13 @@ def citation_replacement_callback(
     def tag_replacer(match: re.Match) -> str:
         short_id = match.group(1)
         if not (source_info := sources.get(short_id)):
-            logging.warning(f"Invalid citation tag found and removed: {match.group(0)}")
+            logging.warning(
+                f"Invalid citation tag found and removed: {match.group(0)}"
+            )
             return ""
-        display_text = source_info.get("title", source_info.get("domain", short_id))
+        display_text = source_info.get(
+            "title", source_info.get("domain", short_id)
+        )
         return f" [{display_text}]({source_info['url']})"
 
     processed_report = re.sub(
