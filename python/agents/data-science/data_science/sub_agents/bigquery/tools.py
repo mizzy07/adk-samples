@@ -73,7 +73,7 @@ def _serialize_value_for_sql(value):
         # For STRUCT, BQ expects ('val1', 'val2', ...).
         # The values() order from the dataframe should match the column order.
         string_values = [_serialize_value_for_sql(v) for v in value.values()]
-        return f"({", ".join(string_values)})"
+        return f"({', '.join(string_values)})"
     return str(value)
 
 

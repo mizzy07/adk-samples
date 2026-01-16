@@ -1,9 +1,14 @@
 [project]
 name = "data-science"
 version = "0.1.0"
-description = "Add your description here"
+description = "A Data Science agent for automated SQL generation, data analysis, and telemetry-instrumented workflows."
+authors = [
+    { name = "Google LLC" }
+]
+license = {text = "Apache License 2.0"}
 readme = "README.md"
 requires-python = ">=3.12"
+
 dependencies = [
     "python-dotenv>=1.0.1",
     "google-adk>=1.14",
@@ -23,28 +28,30 @@ dependencies = [
     "pg8000>=1.31.2",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "google-cloud-aiplatform[adk,agent-engines,evaluation]>=1.93.0",
     "pytest>=8.3.5",
     "pytest-asyncio>=0.26.0",
     "google-adk[eval]>=1.14",
-    "black>=25.9.0",
+    "ruff>=0.4.6",
 ]
 
-[build-system]
-requires = ["uv_build>=0.7.19,<0.8.0"]
-build-backend = "uv_build"
+[tool.ruff]
+# Points back to the Master template in the root
+extend = "../../../pyproject.toml"
 
-[tool.uv.build-backend]
-module-name = "data_science"
-module-root = ""
+[tool.ruff.lint.isort]
+# Ensures the data science source is treated as first-party
+known-first-party = ["data_science"]
+
+[tool.hatch.build.targets.wheel]
+# Maps the package source correctly for Hatchling
+packages = ["data_science"]
 
 [tool.pytest.ini_options]
-# This section is for pytest configuration and does not need to be changed.
 console_output_style = "progress"
 addopts = "-vv -s"
-#addopts = "-vv -s --pdb"
 testpaths = ["tests/"]
 log_level = "DEBUG"
 log_cli = true
@@ -52,8 +59,9 @@ log_auto_indent = true
 log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 log_cli_format = "[%(asctime)s] %(levelname)s (%(funcName)s) \t [%(pathname)s:%(lineno)d] %(message)s"
 filterwarnings = [
-    #"error",
     "ignore::UserWarning",
-    # note the use of single quote below to denote "raw" strings in TOML
-    #'ignore:function ham\(\) is deprecated:DeprecationWarning',
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

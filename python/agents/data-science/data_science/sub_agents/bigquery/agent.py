@@ -43,9 +43,7 @@ def setup_before_agent_call(callback_context: CallbackContext) -> None:
     """Setup the agent."""
 
     if "database_settings" not in callback_context.state:
-        callback_context.state["database_settings"] = (
-            tools.get_database_settings()
-        )
+        callback_context.state["database_settings"] = tools.get_database_settings()
 
 
 def store_results_in_context(
@@ -54,7 +52,6 @@ def store_results_in_context(
     tool_context: ToolContext,
     tool_response: Dict,
 ) -> Optional[Dict]:
-
     # We are setting a state for the data science agent to be able to use the
     # sql query results as context
     if tool.name == ADK_BUILTIN_BQ_EXECUTE_SQL_TOOL:

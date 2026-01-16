@@ -17,6 +17,7 @@
 -- it get data from database (e.g., BQ) using NL2SQL
 -- then, it use NL2Py to do further data analysis as needed
 """
+
 import base64
 import json
 import logging

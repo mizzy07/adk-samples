@@ -64,7 +64,6 @@ def create_RAG_corpus():
 
 
 def ingest_files(corpus_name):
-
     transformation_config = rag.TransformationConfig(
         chunking_config=rag.ChunkingConfig(
             chunk_size=512,

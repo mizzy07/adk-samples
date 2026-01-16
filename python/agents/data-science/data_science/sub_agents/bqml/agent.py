@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """BigQuery ML Agent."""
+
 import os
 
 from data_science.sub_agents.bigquery.agent import bigquery_agent

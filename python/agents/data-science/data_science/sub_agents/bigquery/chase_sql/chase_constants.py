@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Constants used by the ChaseSQL algorithm."""
+
 import os
 from typing import Any
 
