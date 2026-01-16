@@ -31,6 +31,11 @@ def test_generate_sample_values_empty():
 
 
 def test_generate_sample_values_traversal():
+    surface_value = 1
+    nested_value = 2
+    deep_value = 3
+    list_value_1 = 4
+
     data = [
         {
             "a": 1,
@@ -42,10 +47,10 @@ def test_generate_sample_values_traversal():
     sample_str = generate_sample_values_str(data)
     sample_dict = json.loads(sample_str)
 
-    assert sample_dict.get("a") == 1
-    assert sample_dict.get("nested.b") == 2
-    assert sample_dict.get("nested.deep.c") == 3
-    assert sample_dict.get("list_of_objs[].d") == 4
+    assert sample_dict.get("a") == surface_value
+    assert sample_dict.get("nested.b") == nested_value
+    assert sample_dict.get("nested.deep.c") == deep_value
+    assert sample_dict.get("list_of_objs[].d") == list_value_1
 
 
 def test_get_json_schema_simple():
