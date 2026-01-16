@@ -26,6 +26,7 @@ from google.cloud import bigquery
 bqclient = bigquery.Client()
 logger = logging.getLogger(__name__)
 
+MAX_ARGS = 2
 MOVE_SIZE_BP = 25
 DATASET_NAME = os.getenv("GOOGLE_CLOUD_BQ_DATASET", "fomc_research_agent")
 TIMESERIES_CODES = os.getenv(
@@ -187,7 +188,7 @@ def compute_probabilities(meeting_date_str: str) -> dict:
 
 
 def main(argv: Sequence[str]) -> None:
-    if len(argv) > 2:
+    if len(argv) > MAX_ARGS:
         raise app.UsageError("Too many command-line arguments.")
 
     meeting_date = argv[1]

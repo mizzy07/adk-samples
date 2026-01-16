@@ -33,7 +33,7 @@ def create_bigquery_dataset(
     client: bigquery.Client,
     dataset_id: str,
     location: str,
-    description: str = None,
+    description: str | None = None,
     exists_ok: bool = True,
 ) -> bigquery.Dataset:
     """Creates a new BigQuery dataset.
@@ -79,7 +79,7 @@ def create_bigquery_table(
     dataset_id: str,
     table_id: str,
     schema: list[bigquery.SchemaField],
-    description: str = None,
+    description: str | None = None,
     exists_ok: bool = False,
 ) -> bigquery.Table:
     """Creates a new BigQuery table.
@@ -178,7 +178,7 @@ def insert_csv_to_bigquery(
         )
 
     try:
-        with open(csv_filepath, "r", encoding="utf-8") as csvfile:
+        with open(csv_filepath, encoding="utf-8") as csvfile:
             csv_reader = csv.DictReader(csvfile)
             rows_to_insert = list(csv_reader)
 
@@ -205,7 +205,6 @@ def insert_csv_to_bigquery(
 
 
 def main(argv: Sequence[str]) -> None:  # pylint: disable=unused-argument
-
     # Define the table schema
     data_table_name = "timeseries_data"
     data_table_schema = [

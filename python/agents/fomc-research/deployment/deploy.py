@@ -19,9 +19,10 @@ import os
 import vertexai
 from absl import app, flags
 from dotenv import load_dotenv
-from fomc_research.agent import root_agent
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from fomc_research.agent import root_agent
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("project_id", None, "GCP project ID.")
@@ -57,7 +58,6 @@ def delete(resource_id: str) -> None:
 
 
 def main(argv: list[str]) -> None:  # pylint: disable=unused-argument
-
     load_dotenv()
 
     project_id = (

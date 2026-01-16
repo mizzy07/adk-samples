@@ -29,4 +29,4 @@ if not MODEL:
     MODEL = "gemini-2.5-flash"
 
 # MODEL needs to be defined before this import
-from . import agent  # noqa: F401, E402
+from . import agent  # noqa: E402
