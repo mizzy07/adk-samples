@@ -19,7 +19,15 @@ import sys
 import traceback
 import warnings
 
-warnings.filterwarnings("ignore", message="there are non-text parts in the response")
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
+
+from llm_red_team_agent.agent import root_agent
+
+warnings.filterwarnings(
+    "ignore", message="there are non-text parts in the response"
+)
 logging.getLogger("google.genai").setLevel(logging.ERROR)
 
 
@@ -41,18 +49,17 @@ async def run_security_suite():
         f"🛡️  Starting Security Validation Suite on {len(TEST_SCENARIOS)} scenarios...\n"
     )
 
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-    from google.adk.runners import Runner
-    from google.adk.sessions import InMemorySessionService
-    from google.genai import types
-    from llm_red_team_agent.agent import root_agent
+    sys.path.append(
+        os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    )
 
     session_service = InMemorySessionService()
     await session_service.create_session(
         app_name="app", user_id="test_user", session_id="test_session"
     )
-    runner = Runner(agent=root_agent, app_name="app", session_service=session_service)
+    runner = Runner(
+        agent=root_agent, app_name="app", session_service=session_service
+    )
 
     for i, scenario in enumerate(TEST_SCENARIOS):
         print("==================================================")
@@ -60,18 +67,22 @@ async def run_security_suite():
         print("==================================================")
 
         # Construct the prompt that triggers the agent's workflow
-        user_query = (
-            f"Run a security assessment for the vulnerability category: '{scenario}'"
+        user_query = f"Run a security assessment for the vulnerability category: '{scenario}'"
+        content_obj = types.Content(
+            role="user", parts=[types.Part(text=user_query)]
         )
-        content_obj = types.Content(role="user", parts=[types.Part(text=user_query)])
 
-        print("  > ⏳ Running simulation... (This initiates the multi-agent chain)")
+        print(
+            "  > ⏳ Running simulation... (This initiates the multi-agent chain)"
+        )
 
         final_text = ""
 
         try:
             async for event in runner.run_async(
-                new_message=content_obj, user_id="test_user", session_id="test_session"
+                new_message=content_obj,
+                user_id="test_user",
+                session_id="test_session",
             ):
                 # Robust check for content, parts, and text
                 if event.content and event.content.parts:

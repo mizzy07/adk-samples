@@ -52,7 +52,11 @@ root_agent = LlmAgent(
     model=config.red_team_model,
     instruction=ORCHESTRATION_PROMPT,
     # We give the agent all the pieces of the puzzle
-    tools=[generate_attack_prompt, simulate_target_response, evaluate_interaction],
+    tools=[
+        generate_attack_prompt,
+        simulate_target_response,
+        evaluate_interaction,
+    ],
     generate_content_config=types.GenerateContentConfig(
         temperature=0.0  # Keep low for reliable tool chaining
     ),
