@@ -30,9 +30,13 @@ root_agent = Agent(
                     env={
                         "GATEWAY_URL": os.getenv("GATEWAY_URL"),
                         "CLIENT_ID": os.getenv("CLIENT_ID"),
-                        "MERCHANT_PRIVATE_KEY": os.getenv("MERCHANT_PRIVATE_KEY"),
+                        "MERCHANT_PRIVATE_KEY": os.getenv(
+                            "MERCHANT_PRIVATE_KEY"
+                        ),
                         "ALIPAY_PUBLIC_KEY": os.getenv("ALIPAY_PUBLIC_KEY"),
-                        "PAYMENT_REDIRECT_URL": os.getenv("PAYMENT_REDIRECT_URL"),
+                        "PAYMENT_REDIRECT_URL": os.getenv(
+                            "PAYMENT_REDIRECT_URL"
+                        ),
                         "PAYMENT_NOTIFY_URL": os.getenv("PAYMENT_NOTIFY_URL"),
                     },
                 ),

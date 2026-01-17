@@ -19,6 +19,7 @@ import dotenv
 import pytest
 from google.adk.runners import InMemoryRunner
 from google.genai import types
+
 from podcast_transcript_agent.agent import podcast_transcript_agent
 
 
@@ -76,6 +77,6 @@ async def test_run_with_txt():
                             if data["metadata"]["duration_seconds"] > 0:
                                 found_valid_transcript = True
 
-    assert (
-        found_valid_transcript
-    ), "No final event found with valid transcript metadata"
+    assert found_valid_transcript, (
+        "No final event found with valid transcript metadata"
+    )

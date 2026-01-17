@@ -12,22 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
+
+from pydantic import BaseModel
 
 from podcast_transcript_agent.models.podcast_transcript import PodcastSpeaker
-from pydantic import BaseModel
 
 
 class Segment(BaseModel):
     """A model for a 'main_segment', which includes a title."""
 
     title: str
-    script_points: List[str]
+    script_points: list[str]
 
 
 class PodcastEpisodePlan(BaseModel):
     """Represents the entire episode, containing a title and a list of segments."""
 
     episode_title: str
-    speakers: List[PodcastSpeaker]
-    segments: List[Segment]
+    speakers: list[PodcastSpeaker]
+    segments: list[Segment]

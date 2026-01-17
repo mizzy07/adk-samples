@@ -21,17 +21,25 @@ Saves the generated HTML as an artifact for download in adk web.
 
 import logging
 from datetime import datetime
+
+from google import genai
 from google.adk.tools import ToolContext
 from google.genai import types
 from google.genai.errors import ServerError
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from ..config import PRO_MODEL
 
 logger = logging.getLogger("LocationStrategyPipeline")
 
-
-async def generate_html_report(report_data: str, tool_context: ToolContext) -> dict:
+async def generate_html_report(
+    report_data: str, tool_context: ToolContext
+) -> dict:
     """Generate a McKinsey/BCG style HTML executive report and save as artifact.
 
     This tool creates a professional 7-slide HTML presentation from the
@@ -54,8 +62,6 @@ async def generate_html_report(report_data: str, tool_context: ToolContext) -> d
             - error_message: Error details (if failed)
     """
     try:
-        from google import genai
-
         # Initialize client (uses GOOGLE_API_KEY from env)
         client = genai.Client()
 
@@ -185,25 +191,27 @@ Current date: {current_date}
             html_code = html_code.strip()
 
         # Validate we got HTML
-        if not html_code.strip().startswith("<!DOCTYPE") and not html_code.strip().startswith("<html"):
+        if not html_code.strip().startswith(
+            "<!DOCTYPE"
+        ) and not html_code.strip().startswith("<html"):
             logger.warning("Generated content may not be valid HTML")
 
         # Save as artifact with proper MIME type so it appears in ADK web UI
         html_artifact = types.Part.from_bytes(
-            data=html_code.encode('utf-8'),
-            mime_type="text/html"
+            data=html_code.encode("utf-8"), mime_type="text/html"
         )
         artifact_filename = "executive_report.html"
 
         version = await tool_context.save_artifact(
-            filename=artifact_filename,
-            artifact=html_artifact
+            filename=artifact_filename, artifact=html_artifact
         )
 
         # Also store in state for AG-UI frontend display
         tool_context.state["html_report_content"] = html_code
 
-        logger.info(f"Saved HTML report artifact: {artifact_filename} (version {version})")
+        logger.info(
+            f"Saved HTML report artifact: {artifact_filename} (version {version})"
+        )
 
         return {
             "status": "success",
@@ -217,5 +225,5 @@ Current date: {current_date}
         logger.error(f"Failed to generate HTML report: {e}")
         return {
             "status": "error",
-            "error_message": f"Failed to generate HTML report: {str(e)}",
+            "error_message": f"Failed to generate HTML report: {e!s}",
         }

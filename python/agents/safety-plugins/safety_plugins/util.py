@@ -70,7 +70,11 @@ async def run_prompt(
         async for event in runner.run_async(
             user_id=user_id, session_id=session.id, new_message=message
         ):
-            if event.is_final_response() and event.content and event.content.parts:
+            if (
+                event.is_final_response()
+                and event.content
+                and event.content.parts
+            ):
                 return (
                     event.author,
                     (event.content.parts[0].text or ""),
@@ -89,7 +93,8 @@ def parse_model_armor_response(
     sanitization_result = response.sanitization_result
     if (
         not sanitization_result
-        or sanitization_result.filter_match_state == FilterMatchState.NO_MATCH_FOUND
+        or sanitization_result.filter_match_state
+        == FilterMatchState.NO_MATCH_FOUND
     ):
         return None
 
@@ -114,7 +119,9 @@ def parse_model_armor_response(
     if "pi_and_jailbreak" in filter_matches:
         detected_filters.extend(
             parse_pi_and_jailbreak_filter(
-                filter_matches["pi_and_jailbreak"].pi_and_jailbreak_filter_result
+                filter_matches[
+                    "pi_and_jailbreak"
+                ].pi_and_jailbreak_filter_result
             )
         )
     if "sdp" in filter_matches:
@@ -166,7 +173,10 @@ def parse_sdp_filter(sdp_result: SdpFilterResult) -> list[str]:
     detected_filters = []
 
     inspect_result = sdp_result.inspect_result
-    if inspect_result and inspect_result.match_state == FilterMatchState.MATCH_FOUND:
+    if (
+        inspect_result
+        and inspect_result.match_state == FilterMatchState.MATCH_FOUND
+    ):
         for finding in inspect_result.findings:
             info_type = finding.info_type.replace("_", " ").capitalize()
             detected_filters.append(info_type)

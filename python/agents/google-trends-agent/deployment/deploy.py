@@ -18,9 +18,10 @@ import sys
 
 import vertexai
 from dotenv import load_dotenv, set_key
-from google_trends_agent.agent import root_agent
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from google_trends_agent.agent import root_agent
 
 try:
     import tomllib
@@ -59,7 +60,9 @@ def update_env_file(agent_engine_id, env_file_path):
     """Updates the .env file with the agent engine ID."""
     try:
         set_key(env_file_path, "AGENT_ENGINE_ID", agent_engine_id)
-        print(f"Updated AGENT_ENGINE_ID in {env_file_path} to {agent_engine_id}")
+        print(
+            f"Updated AGENT_ENGINE_ID in {env_file_path} to {agent_engine_id}"
+        )
     except Exception as e:
         print(f"Error updating .env file: {e}")
 

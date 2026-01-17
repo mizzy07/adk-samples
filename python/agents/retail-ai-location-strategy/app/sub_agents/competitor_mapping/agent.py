@@ -21,10 +21,9 @@ ground-truth data about existing businesses in the target area.
 from google.adk.agents import LlmAgent
 from google.genai import types
 
-from ...config import FAST_MODEL, RETRY_INITIAL_DELAY, RETRY_ATTEMPTS
+from ...callbacks import after_competitor_mapping, before_competitor_mapping
+from ...config import FAST_MODEL, RETRY_ATTEMPTS, RETRY_INITIAL_DELAY
 from ...tools import search_places
-from ...callbacks import before_competitor_mapping, after_competitor_mapping
-
 
 COMPETITOR_MAPPING_INSTRUCTION = """You are a market intelligence analyst specializing in competitive landscape analysis.
 

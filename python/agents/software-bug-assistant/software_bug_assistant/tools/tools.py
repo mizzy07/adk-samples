@@ -75,7 +75,8 @@ try:
         connection_params=StreamableHTTPConnectionParams(
             url="https://api.githubcopilot.com/mcp/",
             headers={
-                "Authorization": "Bearer " + os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN"),
+                "Authorization": "Bearer "
+                + os.getenv("GITHUB_PERSONAL_ACCESS_TOKEN"),
             },
         ),
         # Read only tools

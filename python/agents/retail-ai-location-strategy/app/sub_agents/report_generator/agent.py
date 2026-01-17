@@ -25,10 +25,9 @@ The tool handles:
 from google.adk.agents import LlmAgent
 from google.genai import types
 
-from ...config import FAST_MODEL, RETRY_INITIAL_DELAY, RETRY_ATTEMPTS
+from ...callbacks import after_report_generator, before_report_generator
+from ...config import FAST_MODEL, RETRY_ATTEMPTS, RETRY_INITIAL_DELAY
 from ...tools import generate_html_report
-from ...callbacks import before_report_generator, after_report_generator
-
 
 REPORT_GENERATOR_INSTRUCTION = """You are an executive report generator for location intelligence analysis.
 

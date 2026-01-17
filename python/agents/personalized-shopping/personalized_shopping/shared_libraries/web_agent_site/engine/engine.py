@@ -38,6 +38,12 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 SEARCH_RETURN_N = 50
 PRODUCT_WINDOW = 10
 TOP_K_ATTR = 10
+ASIN_MAX_LEN = 10
+INDEX_100 = 100
+INDEX_1K = 1000
+INDEX_10K = 10000
+INDEX_50K = 50000
+DEFAULT_PRICE = 100.0
 
 END_BUTTON = "Buy Now"
 NEXT_PAGE = "Next >"
@@ -191,12 +197,12 @@ def get_product_per_page(top_n_products, page):
 
 
 def generate_product_prices(all_products):
-    product_prices = dict()
+    product_prices = {}
     for product in all_products:
         asin = product["asin"]
         pricing = product["pricing"]
         if not pricing:
-            price = 100.0
+            price = DEFAULT_PRICE
         elif len(pricing) == 1:
             price = pricing[0]
         else:
@@ -206,13 +212,13 @@ def generate_product_prices(all_products):
 
 
 def init_search_engine(num_products=None):
-    if num_products == 100:
+    if num_products == INDEX_100:
         indexes = "indexes_100"
-    elif num_products == 1000:
+    elif num_products == INDEX_1K:
         indexes = "indexes_1k"
-    elif num_products == 10000:
+    elif num_products == INDEX_10K:
         indexes = "indexes_10k"
-    elif num_products == 50000:
+    elif num_products == INDEX_50K:
         indexes = "indexes_50k"
     elif num_products is None:
         indexes = "indexes_1k"
@@ -255,8 +261,8 @@ def load_products(filepath, num_products=None, human_goals=True):
 
     # with open(DEFAULT_REVIEW_PATH) as f:
     #     reviews = json.load(f)
-    all_reviews = dict()
-    all_ratings = dict()
+    all_reviews = {}
+    all_ratings = {}
     # for r in reviews:
     #     all_reviews[r['asin']] = r['reviews']
     #     all_ratings[r['asin']] = r['average_rating']
@@ -278,7 +284,7 @@ def load_products(filepath, num_products=None, human_goals=True):
         products = products[:num_products]
     for i, p in tqdm(enumerate(products), total=len(products)):
         asin = p["asin"]
-        if asin == "nan" or len(asin) > 10:
+        if asin == "nan" or len(asin) > ASIN_MAX_LEN:
             continue
 
         if asin in asins:
@@ -324,9 +330,9 @@ def load_products(filepath, num_products=None, human_goals=True):
         products[i]["pricing"] = pricing
         products[i]["Price"] = price_tag
 
-        options = dict()
+        options = {}
         customization_options = p["customization_options"]
-        option_to_image = dict()
+        option_to_image = {}
         if customization_options:
             for option_name, option_contents in customization_options.items():
                 if option_contents is None:

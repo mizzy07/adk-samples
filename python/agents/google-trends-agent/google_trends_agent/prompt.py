@@ -35,7 +35,7 @@ def load_few_shot_examples() -> str:
         return rendered_template
 
     except Exception as e:
-        print(f"Error loading few-shot examples template: {str(e)}")
+        print(f"Error loading few-shot examples template: {e!s}")
         raise
 
 
@@ -56,7 +56,7 @@ def load_table_structure_prompt() -> str:
         return template.render()
 
     except Exception as e:
-        print(f"Error loading table structure template: {str(e)}")
+        print(f"Error loading table structure template: {e!s}")
         raise
 
 

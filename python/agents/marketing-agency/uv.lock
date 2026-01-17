@@ -1503,50 +1503,45 @@ dependencies = [
     { name = "python-dotenv" },
 ]
 
-[package.optional-dependencies]
-lint = [
-    { name = "codespell" },
-    { name = "mypy" },
-    { name = "ruff" },
-    { name = "types-pyyaml" },
-    { name = "types-requests" },
-]
-
 [package.dev-dependencies]
 deployment = [
     { name = "absl-py" },
 ]
 dev = [
     { name = "agent-starter-pack" },
+    { name = "codespell" },
     { name = "google-adk", extra = ["eval"] },
+    { name = "mypy" },
     { name = "nest-asyncio" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
+    { name = "types-requests" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "codespell", marker = "extra == 'lint'", specifier = ">=2.2.0" },
     { name = "google-adk", specifier = ">=1.0.0" },
     { name = "google-cloud-aiplatform", extras = ["adk", "agent-engines"], specifier = ">=1.93.0" },
     { name = "google-genai", specifier = ">=1.9.0" },
-    { name = "mypy", marker = "extra == 'lint'", specifier = ">=1.15.0" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.4.6" },
-    { name = "types-pyyaml", marker = "extra == 'lint'", specifier = ">=6.0.12.20240917" },
-    { name = "types-requests", marker = "extra == 'lint'", specifier = ">=2.32.0.20240914" },
 ]
-provides-extras = ["lint"]
 
 [package.metadata.requires-dev]
 deployment = [{ name = "absl-py", specifier = ">=2.2.1" }]
 dev = [
     { name = "agent-starter-pack", specifier = ">=0.14.1" },
+    { name = "codespell", specifier = ">=2.2.0" },
     { name = "google-adk", extras = ["eval"], specifier = ">=1.0.0" },
+    { name = "mypy", specifier = ">=1.15.0" },
     { name = "nest-asyncio", specifier = ">=1.6.0" },
     { name = "pytest", specifier = ">=8.3.2" },
     { name = "pytest-asyncio", specifier = ">=0.23.7" },
+    { name = "ruff", specifier = ">=0.4.6" },
+    { name = "types-pyyaml", specifier = ">=6.0.12.20240917" },
+    { name = "types-requests", specifier = ">=2.32.0.20240914" },
 ]
 
 [[package]]

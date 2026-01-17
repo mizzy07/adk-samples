@@ -24,20 +24,20 @@ This module exports all specialized agents that form the pipeline:
 6. InfographicGeneratorAgent - Visual infographic generation
 """
 
-from .intake_agent import intake_agent
-from .market_research import market_research_agent
 from .competitor_mapping import competitor_mapping_agent
 from .gap_analysis import gap_analysis_agent
-from .strategy_advisor import strategy_advisor_agent
-from .report_generator import report_generator_agent
 from .infographic_generator import infographic_generator_agent
+from .intake_agent import intake_agent
+from .market_research import market_research_agent
+from .report_generator import report_generator_agent
+from .strategy_advisor import strategy_advisor_agent
 
 __all__ = [
-    "intake_agent",
-    "market_research_agent",
     "competitor_mapping_agent",
     "gap_analysis_agent",
-    "strategy_advisor_agent",
-    "report_generator_agent",
     "infographic_generator_agent",
+    "intake_agent",
+    "market_research_agent",
+    "report_generator_agent",
+    "strategy_advisor_agent",
 ]

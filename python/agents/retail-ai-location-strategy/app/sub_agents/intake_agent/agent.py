@@ -19,14 +19,13 @@ required parameters (target_location, business_type) into session state
 for use by subsequent agents in the pipeline.
 """
 
-from typing import Optional
 
 from google.adk.agents import LlmAgent
 from google.adk.agents.callback_context import CallbackContext
 from google.genai import types
 from pydantic import BaseModel, Field
 
-from ...config import FAST_MODEL, RETRY_INITIAL_DELAY, RETRY_ATTEMPTS
+from ...config import FAST_MODEL, RETRY_ATTEMPTS, RETRY_INITIAL_DELAY
 
 
 class UserRequest(BaseModel):
@@ -38,26 +37,34 @@ class UserRequest(BaseModel):
     business_type: str = Field(
         description="The type of business the user wants to open (e.g., 'coffee shop', 'bakery', 'gym', 'restaurant')"
     )
-    additional_context: Optional[str] = Field(
+    additional_context: str | None = Field(
         default=None,
-        description="Any additional context or requirements mentioned by the user"
+        description="Any additional context or requirements mentioned by the user",
     )
 
 
-def after_intake(callback_context: CallbackContext) -> Optional[types.Content]:
+def after_intake(callback_context: CallbackContext) -> types.Content | None:
     """After intake, copy the parsed values to state for other agents."""
     parsed = callback_context.state.get("parsed_request", {})
 
     if isinstance(parsed, dict):
         # Extract values from parsed request
-        callback_context.state["target_location"] = parsed.get("target_location", "")
-        callback_context.state["business_type"] = parsed.get("business_type", "")
-        callback_context.state["additional_context"] = parsed.get("additional_context", "")
+        callback_context.state["target_location"] = parsed.get(
+            "target_location", ""
+        )
+        callback_context.state["business_type"] = parsed.get(
+            "business_type", ""
+        )
+        callback_context.state["additional_context"] = parsed.get(
+            "additional_context", ""
+        )
     elif hasattr(parsed, "target_location"):
         # Handle Pydantic model
         callback_context.state["target_location"] = parsed.target_location
         callback_context.state["business_type"] = parsed.business_type
-        callback_context.state["additional_context"] = parsed.additional_context or ""
+        callback_context.state["additional_context"] = (
+            parsed.additional_context or ""
+        )
 
     # Track intake stage completion
     stages = callback_context.state.get("stages_completed", [])

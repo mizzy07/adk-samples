@@ -14,7 +14,6 @@
 
 import os
 from pathlib import Path
-from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -27,16 +26,20 @@ if env_path.exists():
 class Config:
     def __init__(self):
         # Google Cloud Configuration
-        self.project_id: Optional[str] = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv(
-            "GCP_PROJECT_ID"
-        )
-        self.location: Optional[str] = os.getenv(
+        self.project_id: str | None = os.getenv(
+            "GOOGLE_CLOUD_PROJECT"
+        ) or os.getenv("GCP_PROJECT_ID")
+        self.location: str | None = os.getenv(
             "GOOGLE_CLOUD_LOCATION", "us-central1"
         ).lower()
-        self.use_vertex_ai: bool = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "0") == "1"
+        self.use_vertex_ai: bool = (
+            os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "0") == "1"
+        )
 
         # Model Configuration
-        self.root_agent_model: str = os.getenv("ROOT_AGENT_MODEL", "gemini-2.5-pro")
+        self.root_agent_model: str = os.getenv(
+            "ROOT_AGENT_MODEL", "gemini-2.5-pro"
+        )
 
         # Dataform Configuration
         self.repository_name: str = os.getenv(
@@ -49,7 +52,9 @@ class Config:
     def validate(self) -> bool:
         """Validate that all required configuration is present."""
         if not self.project_id:
-            raise ValueError("GOOGLE_CLOUD_PROJECT environment variable is required")
+            raise ValueError(
+                "GOOGLE_CLOUD_PROJECT environment variable is required"
+            )
         return True
 
     @property

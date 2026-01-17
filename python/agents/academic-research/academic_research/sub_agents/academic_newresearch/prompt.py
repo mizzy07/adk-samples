@@ -14,7 +14,6 @@
 
 """Prompt for the academic_newresearch_agent agent."""
 
-
 ACADEMIC_NEWRESEARCH_PROMPT = """
 Role: You are an AI Research Foresight Agent.
 

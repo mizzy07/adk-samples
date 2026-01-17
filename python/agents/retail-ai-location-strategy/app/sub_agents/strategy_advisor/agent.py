@@ -23,10 +23,9 @@ from google.adk.planners import BuiltInPlanner
 from google.genai import types
 from google.genai.types import ThinkingConfig
 
-from ...config import PRO_MODEL, RETRY_INITIAL_DELAY, RETRY_ATTEMPTS
+from ...callbacks import after_strategy_advisor, before_strategy_advisor
+from ...config import PRO_MODEL, RETRY_ATTEMPTS, RETRY_INITIAL_DELAY
 from ...schemas import LocationIntelligenceReport
-from ...callbacks import before_strategy_advisor, after_strategy_advisor
-
 
 STRATEGY_ADVISOR_INSTRUCTION = """You are a senior strategy consultant synthesizing location intelligence findings.
 

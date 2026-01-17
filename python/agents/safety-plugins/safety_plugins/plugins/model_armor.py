@@ -44,7 +44,9 @@ LlmResponse = llm_response.LlmResponse
 _USER_PROMPT_REMOVED_MESSAGE = (
     "A safety filter has removed the last user prompt as it was deemed unsafe."
 )
-_UNSAFE_TOOL_OUTPUT_MESSAGE = "Unable to emit tool result due to unsafe outputs."
+_UNSAFE_TOOL_OUTPUT_MESSAGE = (
+    "Unable to emit tool result due to unsafe outputs."
+)
 _MODEL_RESPONSE_REMOVED_MESSAGE = (
     "A safety filter has removed the model's response as it was deemed unsafe."
 )
@@ -143,7 +145,9 @@ class ModelArmorSafetyFilterPlugin(BasePlugin):
     ) -> types.Content | None:
         # Consume the state set in the on_user_message_callback to determine if the
         # user prompt is safe. If not, return a modified user prompt.
-        if not invocation_context.session.state.get("is_user_prompt_safe", True):
+        if not invocation_context.session.state.get(
+            "is_user_prompt_safe", True
+        ):
             # Reset session state to true to allow the runner to proceed normally.
             invocation_context.session.state["is_user_prompt_safe"] = True
             return types.Content(
@@ -170,7 +174,9 @@ class ModelArmorSafetyFilterPlugin(BasePlugin):
         ).strip()
         if not model_output:
             return None
-        if self._get_model_armor_response("sanitizeModelResponse", model_output):
+        if self._get_model_armor_response(
+            "sanitizeModelResponse", model_output
+        ):
             return LlmResponse(
                 content=types.Content(
                     role="model",

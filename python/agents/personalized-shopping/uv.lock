@@ -584,14 +584,6 @@ wheels = [
 ]
 
 [[package]]
-name = "en-core-web-sm"
-version = "3.8.0"
-source = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
-wheels = [
-    { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl", hash = "sha256:1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85" },
-]
-
-[[package]]
 name = "exceptiongroup"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2252,7 +2244,6 @@ source = { editable = "." }
 dependencies = [
     { name = "absl-py" },
     { name = "cleantext" },
-    { name = "en-core-web-sm" },
     { name = "flask" },
     { name = "gdown" },
     { name = "google-adk" },
@@ -2271,54 +2262,48 @@ dependencies = [
     { name = "torchvision" },
 ]
 
-[package.optional-dependencies]
-lint = [
-    { name = "codespell" },
-    { name = "mypy" },
-    { name = "ruff" },
-    { name = "types-pyyaml" },
-    { name = "types-requests" },
-]
-
 [package.dev-dependencies]
 dev = [
     { name = "agent-starter-pack" },
+    { name = "codespell" },
+    { name = "mypy" },
     { name = "pytest-asyncio" },
+    { name = "ruff" },
+    { name = "types-pyyaml" },
+    { name = "types-requests" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "absl-py", specifier = ">=2.2.1" },
     { name = "cleantext", specifier = ">=1.1.4" },
-    { name = "codespell", marker = "extra == 'lint'", specifier = ">=2.2.0" },
-    { name = "en-core-web-sm", url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" },
     { name = "flask", specifier = ">=3.1.0" },
     { name = "gdown", specifier = ">=5.2.0" },
     { name = "google-adk", specifier = ">=1.0.0" },
     { name = "google-cloud-aiplatform", extras = ["adk", "agent-engines"], specifier = ">=1.93.0" },
     { name = "google-genai", specifier = ">=1.9.0" },
     { name = "gym", specifier = "==0.26.2" },
-    { name = "mypy", marker = "extra == 'lint'", specifier = ">=1.15.0" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "pyserini", specifier = ">=0.43.0" },
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "rich", specifier = ">=13.9.4" },
-    { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.4.6" },
     { name = "spacy", specifier = ">=3.8.2" },
     { name = "tabulate", specifier = ">=0.9.0" },
     { name = "thefuzz", specifier = ">=0.22.1" },
     { name = "torch", specifier = ">=2.5.1" },
     { name = "torchvision", specifier = ">=0.20.1" },
-    { name = "types-pyyaml", marker = "extra == 'lint'", specifier = ">=6.0.12.20240917" },
-    { name = "types-requests", marker = "extra == 'lint'", specifier = ">=2.32.0.20240914" },
 ]
-provides-extras = ["lint"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "agent-starter-pack", specifier = ">=0.14.1" },
+    { name = "codespell", specifier = ">=2.2.0" },
+    { name = "mypy", specifier = ">=1.15.0" },
     { name = "pytest-asyncio", specifier = ">=0.26.0" },
+    { name = "ruff", specifier = ">=0.4.6" },
+    { name = "types-pyyaml", specifier = ">=6.0.12.20240917" },
+    { name = "types-requests", specifier = ">=2.32.0.20240914" },
 ]
 
 [[package]]

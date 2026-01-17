@@ -22,9 +22,8 @@ from google.adk.agents import LlmAgent
 from google.adk.tools import google_search
 from google.genai import types
 
-from ...config import FAST_MODEL, RETRY_INITIAL_DELAY, RETRY_ATTEMPTS
-from ...callbacks import before_market_research, after_market_research
-
+from ...callbacks import after_market_research, before_market_research
+from ...config import FAST_MODEL, RETRY_ATTEMPTS, RETRY_INITIAL_DELAY
 
 MARKET_RESEARCH_INSTRUCTION = """You are a market research analyst specializing in retail location intelligence.
 

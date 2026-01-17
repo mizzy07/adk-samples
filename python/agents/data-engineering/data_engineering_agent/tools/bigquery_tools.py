@@ -21,7 +21,7 @@ based on user-defined rules.
 """
 
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from google.cloud import bigquery
 
@@ -33,7 +33,7 @@ def get_bigquery_client() -> bigquery.Client:
     return bigquery.Client(project=config.project_id)
 
 
-def bigquery_job_details_tool(job_id: str) -> Dict[str, Any]:
+def bigquery_job_details_tool(job_id: str) -> dict[str, Any]:
     """Retrieve details of a BigQuery job.
 
     Args:
@@ -60,7 +60,7 @@ def bigquery_job_details_tool(job_id: str) -> Dict[str, Any]:
         return {"error": f"Error getting job details: {e}"}
 
 
-def get_udf_sp_tool(dataset_id: str, routine_type: Optional[str] = None) -> str:
+def get_udf_sp_tool(dataset_id: str, routine_type: str | None = None) -> str:
     """Retrieve UDFs and Stored Procedures from a BigQuery dataset.
 
     Args:
@@ -108,14 +108,18 @@ def get_udf_sp_tool(dataset_id: str, routine_type: Optional[str] = None) -> str:
 
     except Exception as e:
         return json.dumps(
-            {"error": (f"Error retrieving routines from dataset '{dataset_id}': {e}")},
+            {
+                "error": (
+                    f"Error retrieving routines from dataset '{dataset_id}': {e}"
+                )
+            },
             indent=2,
         )
 
 
 def validate_table_data(
-    dataset_id: str, table_id: str, rules: List[Dict[str, Any]]
-) -> Dict[str, Any]:
+    dataset_id: str, table_id: str, rules: list[dict[str, Any]]
+) -> dict[str, Any]:
     """Validate data in a BigQuery table against specified rules.
 
     Args:
@@ -192,7 +196,7 @@ def sample_table_data_tool(
     dataset_id: str,
     table_id: str,
     sample_size: int = 10,
-    random_seed: Optional[int] = None,
+    random_seed: int | None = None,
 ) -> str:
     """Sample data from a BigQuery table using RAND() function.
 
@@ -210,12 +214,14 @@ def sample_table_data_tool(
         client = get_bigquery_client()
 
         # Build the query with optional random seed
-        seed_clause = f"SET @seed = {random_seed};" if random_seed is not None else ""
+        seed_clause = (
+            f"SET @seed = {random_seed};" if random_seed is not None else ""
+        )
         query = f"""
             {seed_clause}
             SELECT *
             FROM `{config.project_id}.{dataset_id}.{table_id}`
-            ORDER BY {'RAND(@seed)' if random_seed is not None else 'RAND()'}
+            ORDER BY {"RAND(@seed)" if random_seed is not None else "RAND()"}
             LIMIT {sample_size}
         """
 

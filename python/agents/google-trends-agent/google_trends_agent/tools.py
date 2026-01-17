@@ -51,4 +51,4 @@ def execute_bigquery_sql(sql: str) -> str:
                 .replace("```", "")
             )
     except Exception as e:
-        return f"Error executing BigQuery query: {str(e)}"
+        return f"Error executing BigQuery query: {e!s}"

@@ -24,17 +24,26 @@ so it's accessible in adk web UI.
 
 import base64
 import logging
+
+from google import genai
 from google.adk.tools import ToolContext
 from google.genai import types
 from google.genai.errors import ServerError
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from ..config import IMAGE_MODEL
 
 logger = logging.getLogger("LocationStrategyPipeline")
 
 
-async def generate_infographic(data_summary: str, tool_context: ToolContext) -> dict:
+async def generate_infographic(
+    data_summary: str, tool_context: ToolContext
+) -> dict:
     """Generate an infographic image using Gemini's image generation capabilities.
 
     This tool creates a professional infographic visualizing the location
@@ -59,8 +68,6 @@ async def generate_infographic(data_summary: str, tool_context: ToolContext) -> 
             - error_message: Error details (if failed)
     """
     try:
-        from google import genai
-
         # Initialize Gemini client using AI Studio (not Vertex AI)
         # This uses GOOGLE_API_KEY from environment automatically
         client = genai.Client()
@@ -120,19 +127,23 @@ Create an infographic that a business executive would use in a board presentatio
                     # Note: save_artifact is async, so we must await it
                     try:
                         image_artifact = types.Part.from_bytes(
-                            data=image_bytes,
-                            mime_type=mime_type
+                            data=image_bytes, mime_type=mime_type
                         )
                         artifact_filename = "infographic.png"
                         version = await tool_context.save_artifact(
-                            filename=artifact_filename,
-                            artifact=image_artifact
+                            filename=artifact_filename, artifact=image_artifact
                         )
-                        logger.info(f"Saved infographic artifact: {artifact_filename} (version {version})")
+                        logger.info(
+                            f"Saved infographic artifact: {artifact_filename} (version {version})"
+                        )
 
                         # Also store base64 in state for AG-UI frontend display
-                        b64_image = base64.b64encode(image_bytes).decode('utf-8')
-                        tool_context.state["infographic_base64"] = f"data:{mime_type};base64,{b64_image}"
+                        b64_image = base64.b64encode(image_bytes).decode(
+                            "utf-8"
+                        )
+                        tool_context.state["infographic_base64"] = (
+                            f"data:{mime_type};base64,{b64_image}"
+                        )
 
                         return {
                             "status": "success",
@@ -149,7 +160,9 @@ Create an infographic that a business executive would use in a board presentatio
                             "status": "success",
                             "message": "Infographic generated but artifact save failed",
                             "artifact_saved": False,
-                            "image_data": base64.b64encode(image_bytes).decode("utf-8"),
+                            "image_data": base64.b64encode(image_bytes).decode(
+                                "utf-8"
+                            ),
                             "mime_type": mime_type,
                             "save_error": str(save_error),
                         }
@@ -164,5 +177,5 @@ Create an infographic that a business executive would use in a board presentatio
         logger.error(f"Failed to generate infographic: {e}")
         return {
             "status": "error",
-            "error_message": f"Failed to generate infographic: {str(e)}",
+            "error_message": f"Failed to generate infographic: {e!s}",
         }

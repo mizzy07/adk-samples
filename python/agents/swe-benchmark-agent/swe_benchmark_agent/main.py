@@ -45,7 +45,9 @@ def clone_terminalbench_repo() -> Path:
     target_commit = "91e10457b5410f16c44364da1a34cb6de8c488a5"
 
     if repo_dir.exists():
-        logger.info("Terminal-Bench repo exists, checking out to %s", target_commit)
+        logger.info(
+            "Terminal-Bench repo exists, checking out to %s", target_commit
+        )
         subprocess.run(
             ["git", "-C", str(repo_dir), "checkout", target_commit],
             check=True,
@@ -93,7 +95,7 @@ def load_terminalbench_tasks(
 
     # Load core task IDs from the core-v0 dataset
     core_dataset_path = repo_dir / "datasets" / "terminal-bench-core-v0.yaml"
-    with open(core_dataset_path, "r", encoding="utf-8") as f:
+    with open(core_dataset_path, encoding="utf-8") as f:
         core_config = yaml.safe_load(f)
     core_task_ids = set(core_config.get("task_ids", []))
     logger.info("Core dataset contains %d task IDs", len(core_task_ids))
@@ -137,7 +139,7 @@ def load_terminalbench_tasks(
             problem_statement = ""
             task_yaml = task_dir / "task.yaml"
             if task_yaml.exists():
-                with open(task_yaml, "r", encoding="utf-8") as f:
+                with open(task_yaml, encoding="utf-8") as f:
                     task_config = yaml.safe_load(f) or {}
                     problem_statement = task_config.get("instruction", "")
 
@@ -274,20 +276,24 @@ def load_progress(
 
         if os.path.exists(file_path):
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     loaded_data = json.load(f)
                 data_dict.update(loaded_data)
                 logger.debug(
-                    "Loaded %d entries from %s file", len(loaded_data), data_type
+                    "Loaded %d entries from %s file",
+                    len(loaded_data),
+                    data_type,
                 )
             except Exception as e:  # pylint: disable=broad-exception-caught
-                logger.error("Failed to load %s file %s: %s", data_type, file_path, e)
+                logger.error(
+                    "Failed to load %s file %s: %s", data_type, file_path, e
+                )
                 # Try backup file
                 backup_file = f"{file_path}.backup"
                 if os.path.exists(backup_file):
                     logger.info("Trying backup file %s", backup_file)
                     try:
-                        with open(backup_file, "r", encoding="utf-8") as f:
+                        with open(backup_file, encoding="utf-8") as f:
                             loaded_data = json.load(f)
                         data_dict.update(loaded_data)
                         logger.info(
@@ -295,11 +301,11 @@ def load_progress(
                             len(loaded_data),
                             data_type,
                         )
-                    except (
-                        Exception
-                    ) as backup_e:  # pylint: disable=broad-exception-caught
+                    except Exception as backup_e:  # pylint: disable=broad-exception-caught
                         logger.error(
-                            "Failed to load backup %s file: %s", data_type, backup_e
+                            "Failed to load backup %s file: %s",
+                            data_type,
+                            backup_e,
                         )
 
     if predictions_data:
@@ -330,7 +336,9 @@ def process_instance(
     Returns:
       A tuple containing the prediction and trajectory results.
     """
-    instance_id = instance.get("instance_id") or instance.get("task_id", "unknown")
+    instance_id = instance.get("instance_id") or instance.get(
+        "task_id", "unknown"
+    )
     start_time = time.time()
     logger.info("Processing instance: %s", instance_id)
 
@@ -407,7 +415,8 @@ def run(
     instance_id_or_count: str = typer.Option(
         "astropy__astropy-12907",
         help=(
-            "The SWE-bench instance ID to run, or the number of instances to" " run."
+            "The SWE-bench instance ID to run, or the number of instances to"
+            " run."
         ),
     ),
     model_name: str = typer.Option(
@@ -471,7 +480,9 @@ def run(
     start_time = time.time()
 
     # Determine benchmark type
-    benchmark_type = "terminalbench" if dataset == "terminalbench" else "swebench"
+    benchmark_type = (
+        "terminalbench" if dataset == "terminalbench" else "swebench"
+    )
 
     # Generate run ID if not provided
     if run_id is None:
@@ -516,7 +527,8 @@ def run(
                 task_ids = [instance_id_or_count]
 
         benchmark_dataset = load_terminalbench_tasks(
-            task_ids=task_ids, n_tasks=n_tasks_to_load if not full_dataset else None
+            task_ids=task_ids,
+            n_tasks=n_tasks_to_load if not full_dataset else None,
         )
 
         if not benchmark_dataset:
@@ -538,34 +550,36 @@ def run(
         # For terminalbench, tasks are already filtered during loading
         instances_to_run = benchmark_dataset
         logger.info("Running %d Terminal-Bench tasks", len(instances_to_run))
+    # For SWE-bench
+    elif full_dataset:
+        instances_to_run = list(benchmark_dataset)
+        logger.info("Running FULL dataset (%d instances)", total_instances)
     else:
-        # For SWE-bench
-        if full_dataset:
-            instances_to_run = list(benchmark_dataset)
-            logger.info("Running FULL dataset (%d instances)", total_instances)
-        else:
-            try:
-                n = int(instance_id_or_count)
-                instances_to_run = list(
-                    benchmark_dataset.select(range(min(n, total_instances)))
+        try:
+            n = int(instance_id_or_count)
+            instances_to_run = list(
+                benchmark_dataset.select(range(min(n, total_instances)))
+            )
+            logger.info(
+                "Running the first %d instances", len(instances_to_run)
+            )
+        except ValueError as exc:
+            instance = next(
+                (
+                    i
+                    for i in benchmark_dataset
+                    if i["instance_id"] == instance_id_or_count
+                ),
+                None,
+            )
+            if instance is None:
+                logger.error(
+                    "Instance %s not found in the dataset",
+                    instance_id_or_count,
                 )
-                logger.info("Running the first %d instances", len(instances_to_run))
-            except ValueError as exc:
-                instance = next(
-                    (
-                        i
-                        for i in benchmark_dataset
-                        if i["instance_id"] == instance_id_or_count
-                    ),
-                    None,
-                )
-                if instance is None:
-                    logger.error(
-                        "Instance %s not found in the dataset", instance_id_or_count
-                    )
-                    raise typer.Exit(code=1) from exc
-                instances_to_run.append(instance)
-                logger.info("Running single instance: %s", instance_id_or_count)
+                raise typer.Exit(code=1) from exc
+            instances_to_run.append(instance)
+            logger.info("Running single instance: %s", instance_id_or_count)
 
     # Load existing progress
     predictions_data, trajectories_data, existing_metadata = (
@@ -578,7 +592,9 @@ def run(
     # Filter out already completed instances
     if resume and predictions_data:
         completed_ids = set(predictions_data.keys())
-        id_key = "task_id" if benchmark_type == "terminalbench" else "instance_id"
+        id_key = (
+            "task_id" if benchmark_type == "terminalbench" else "instance_id"
+        )
         instances_to_run = [
             i for i in instances_to_run if i.get(id_key) not in completed_ids
         ]
@@ -621,17 +637,25 @@ def run(
                     # Progress logging
                     elapsed = time.time() - start_time
                     total_instances_in_run = (
-                        total_to_process + len(predictions_data) - completed_count
+                        total_to_process
+                        + len(predictions_data)
+                        - completed_count
                     )
                     progress_pct = (
                         (completed_count / total_instances_in_run) * 100
                         if total_instances_in_run > 0
                         else 100
                     )
-                    avg_time = elapsed / completed_count if completed_count > 0 else 0
+                    avg_time = (
+                        elapsed / completed_count if completed_count > 0 else 0
+                    )
                     eta = avg_time * (
                         total_to_process
-                        - (completed_count - len(predictions_data) + completed_count)
+                        - (
+                            completed_count
+                            - len(predictions_data)
+                            + completed_count
+                        )
                     )
 
                     logger.info(
@@ -656,12 +680,16 @@ def run(
 
             except Exception as exc:  # pylint: disable=broad-exception-caught
                 instance_id = futures[future]["instance_id"]
-                logger.error("Instance %s generated an exception: %s", instance_id, exc)
+                logger.error(
+                    "Instance %s generated an exception: %s", instance_id, exc
+                )
 
     # Final save
     run_metadata["completion_time"] = time.time()
     run_metadata["total_completed"] = len(predictions_data)
-    save_progress(predictions_data, trajectories_data, run_metadata, run_id, base_dir)
+    save_progress(
+        predictions_data, trajectories_data, run_metadata, run_id, base_dir
+    )
 
     total_time = time.time() - start_time
     success_count = sum(
@@ -685,7 +713,9 @@ def run(
     if evaluate:
         if benchmark_type == "terminalbench":
             # For terminalbench, evaluation happens inline during submission
-            logger.info("Terminal-Bench evaluation completed inline during agent runs")
+            logger.info(
+                "Terminal-Bench evaluation completed inline during agent runs"
+            )
 
             # Parse test results from patches and compute accuracy
             # A task passes only if all test scripts pass (no "Passed: False")
@@ -693,11 +723,17 @@ def run(
             for _, prediction in predictions_data.items():
                 patch = prediction.get("model_patch", "")
                 # Task is successful only if it has results and NO test failed
-                if patch and "Passed: False" not in patch and "Passed: True" in patch:
+                if (
+                    patch
+                    and "Passed: False" not in patch
+                    and "Passed: True" in patch
+                ):
                     successful_count += 1
 
             accuracy = (
-                successful_count / len(predictions_data) if predictions_data else 0
+                successful_count / len(predictions_data)
+                if predictions_data
+                else 0
             )
             logger.info(
                 "Terminal-Bench Accuracy: %.2f%% (%d/%d tasks passed)",
