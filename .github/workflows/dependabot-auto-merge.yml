@@ -88,7 +88,7 @@ jobs:
 
       - name: Checkout code
         if: steps.check.outputs.is_dependabot == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: refs/pull/${{ steps.pr.outputs.number }}/head
           fetch-depth: 0
