@@ -140,6 +140,9 @@ jobs:
             echo "EOF"
           } >> "${GITHUB_OUTPUT}"
 
+      - name: Set GEMINI_API_KEY
+        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> $GITHUB_ENV
+
       - name: 'Run Gemini PR Review'
         uses: 'google-github-actions/run-gemini-cli@v0'
         id: 'gemini_pr_review'
