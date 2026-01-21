@@ -66,24 +66,24 @@ Before running or deploying the agent, you must configure the environment.
 To test the agent locally using the ADK's built-in web interface:
 
 1. **Install Dependencies:**
-    This project uses `uv` for dependency management. The `Makefile` handles the installation.
+    This project uses `uv` for dependency management.
 
     ```bash
-    make install
+    uv sync
     ```
 
 2. **Run Tests:**
     Execute the unit test suite to verify the agent's logic.
 
     ```bash
-    make test
+    uv run pytest -v
     ```
 
 3. **Run the Agent:**
     This starts the local ADK web UI.
 
     ```bash
-    make run
+    uv run adk web --log_level DEBUG
     ```
 
     Access the UI at `http://localhost:8000`.
@@ -95,7 +95,7 @@ To deploy the agent to Agent Engine then register it with Gemini Enterprise:
 1. **Deploy the Agent:**
 
     ```bash
-    make deploy
+    uv run deployment/deploy.py
     ```
 
 2. **Register with Gemini Enterprise:**
