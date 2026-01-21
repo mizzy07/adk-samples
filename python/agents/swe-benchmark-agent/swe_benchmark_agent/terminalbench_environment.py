@@ -41,7 +41,9 @@ class TerminalBenchEnvironment:
         self.container_name = None
 
         if not self.compose_file.exists():
-            raise FileNotFoundError(f"docker-compose.yaml not found in {self.task_dir}")
+            raise FileNotFoundError(
+                f"docker-compose.yaml not found in {self.task_dir}"
+            )
 
         # Setup container
         self._setup_container()
@@ -91,13 +93,15 @@ class TerminalBenchEnvironment:
                 e.stdout,
                 e.stderr,
             )
-            raise RuntimeError(f"Failed to start Terminal-Bench environment: {e}")
-        except subprocess.TimeoutExpired:
+            raise RuntimeError(
+                f"Failed to start Terminal-Bench environment: {e}"
+            ) from e
+        except subprocess.TimeoutExpired as e:
             logger.error("Docker compose up timed out after 300s")
-            raise RuntimeError("Container setup timed out")
+            raise RuntimeError("Container setup timed out") from e
         except Exception as e:  # pylint: disable=broad-exception-caught
-            logger.error("Unexpected error during setup: %s", e)
-            raise
+            logger.error("Unexpected error during setup: %s", e) 
+            raise RuntimeError("Container setup timed out") from e
 
     def get_working_dir(self) -> str:
         """Get the working directory of the container."""
@@ -123,7 +127,7 @@ class TerminalBenchEnvironment:
         self.container.put_archive(os.path.dirname(dest_path), tar_stream)
 
     def execute(
-        self, command: str, workdir: str = None, demux: bool = False
+        self, command: str, workdir: str | None = None, demux: bool = False
     ) -> tuple[int, str | tuple[str, str]]:
         """Execute a command in the container."""
         if not self.container:

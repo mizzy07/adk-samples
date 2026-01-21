@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-from typing import List
 
 from pydantic import BaseModel
 
@@ -32,7 +31,7 @@ class PodcastSegment(BaseModel):
     title: str
     start_time: float
     end_time: float
-    speaker_dialogues: List[SpeakerDialogue]
+    speaker_dialogues: list[SpeakerDialogue]
 
 
 class PodcastSpeaker(BaseModel):
@@ -55,5 +54,5 @@ class PodcastTranscript(BaseModel):
     """A model for a podcast transcript, which includes metadata, speakers, and segments."""
 
     metadata: PodcastMetadata
-    speakers: List[PodcastSpeaker]
-    segments: List[PodcastSegment]
+    speakers: list[PodcastSpeaker]
+    segments: list[PodcastSegment]

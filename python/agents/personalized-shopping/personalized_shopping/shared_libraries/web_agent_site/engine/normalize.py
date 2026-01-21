@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import re
-from typing import Tuple
 
 COLOR_SET = [
     "alabaster",
@@ -176,7 +175,7 @@ def normalize_color(color_string: str) -> str:
     return color_string
 
 
-def normalize_color_size(product_prices: dict) -> Tuple[dict, dict]:
+def normalize_color_size(product_prices: dict) -> tuple[dict, dict]:
     """Get mappings of all colors, sizes to corresponding values in COLOR_SET, SIZE_PATTERNS"""
 
     # Get all colors, sizes from list of all products

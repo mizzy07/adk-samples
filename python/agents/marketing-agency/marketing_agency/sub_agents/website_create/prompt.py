@@ -95,7 +95,7 @@ Code Quality & Files:
 
 Generate semantic HTML5.
 Use clean, well-organized, and commented CSS. Place all styles in a single external style.css file linked in the <head> of each HTML page.
-If any JavaScript is needed (e.g., for a mobile navigation menu toggle, simple animations – keep it minimal), place it in an external script.js file, linked before the closing </body> tag. Ensure it is unobtrusive and enhances usability.
+If any JavaScript is needed (e.g., for a mobile navigation menu toggle, simple animations - keep it minimal), place it in an external script.js file, linked before the closing </body> tag. Ensure it is unobtrusive and enhances usability.
 Output Requirements:
 
 The complete HTML, CSS, and JavaScript files for the website. The output should be structured so the user can easily copy and save each file with its correct name (e.g., index.html, style.css, script.js). Clearly delimit the content for each file if provided in a single block. For example:

@@ -23,8 +23,9 @@ Location Strategy Pipeline. Callbacks handle:
 
 import json
 import logging
+import re
+import traceback
 from datetime import datetime
-from typing import Optional
 
 from google.adk.agents.callback_context import CallbackContext
 from google.genai import types
@@ -32,7 +33,7 @@ from google.genai import types
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger("LocationStrategyPipeline")
 
@@ -41,12 +42,19 @@ logger = logging.getLogger("LocationStrategyPipeline")
 # BEFORE AGENT CALLBACKS
 # ============================================================================
 
-def before_market_research(callback_context: CallbackContext) -> Optional[types.Content]:
+
+def before_market_research(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log start of market research phase and initialize pipeline tracking."""
     logger.info("=" * 60)
     logger.info("STAGE 1: MARKET RESEARCH - Starting")
-    logger.info(f"  Target Location: {callback_context.state.get('target_location', 'Not set')}")
-    logger.info(f"  Business Type: {callback_context.state.get('business_type', 'Not set')}")
+    logger.info(
+        f"  Target Location: {callback_context.state.get('target_location', 'Not set')}"
+    )
+    logger.info(
+        f"  Business Type: {callback_context.state.get('business_type', 'Not set')}"
+    )
     logger.info("=" * 60)
 
     # Set current date for state injection in agent instruction
@@ -62,7 +70,9 @@ def before_market_research(callback_context: CallbackContext) -> Optional[types.
     return None  # Allow agent to proceed
 
 
-def before_competitor_mapping(callback_context: CallbackContext) -> Optional[types.Content]:
+def before_competitor_mapping(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log start of competitor mapping phase."""
     logger.info("=" * 60)
     logger.info("STAGE 2A: COMPETITOR MAPPING - Starting")
@@ -76,12 +86,16 @@ def before_competitor_mapping(callback_context: CallbackContext) -> Optional[typ
     # Workaround for AG-UI middleware issue: initialize state variable
     # The middleware may end agent prematurely after tool calls, preventing output_key from being set
     if "competitor_analysis" not in callback_context.state:
-        callback_context.state["competitor_analysis"] = "Competitor data being collected via Google Maps API..."
+        callback_context.state["competitor_analysis"] = (
+            "Competitor data being collected via Google Maps API..."
+        )
 
     return None
 
 
-def before_gap_analysis(callback_context: CallbackContext) -> Optional[types.Content]:
+def before_gap_analysis(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log start of gap analysis phase."""
     logger.info("=" * 60)
     logger.info("STAGE 2B: GAP ANALYSIS - Starting")
@@ -94,12 +108,16 @@ def before_gap_analysis(callback_context: CallbackContext) -> Optional[types.Con
 
     # Workaround for AG-UI middleware issue: initialize state variable
     if "gap_analysis" not in callback_context.state:
-        callback_context.state["gap_analysis"] = "Gap analysis being computed..."
+        callback_context.state["gap_analysis"] = (
+            "Gap analysis being computed..."
+        )
 
     return None
 
 
-def before_strategy_advisor(callback_context: CallbackContext) -> Optional[types.Content]:
+def before_strategy_advisor(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log start of strategy synthesis phase."""
     logger.info("=" * 60)
     logger.info("STAGE 3: STRATEGY SYNTHESIS - Starting")
@@ -114,7 +132,9 @@ def before_strategy_advisor(callback_context: CallbackContext) -> Optional[types
     return None
 
 
-def before_report_generator(callback_context: CallbackContext) -> Optional[types.Content]:
+def before_report_generator(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log start of report generation phase."""
     logger.info("=" * 60)
     logger.info("STAGE 4: REPORT GENERATION - Starting")
@@ -128,7 +148,9 @@ def before_report_generator(callback_context: CallbackContext) -> Optional[types
     return None
 
 
-def before_infographic_generator(callback_context: CallbackContext) -> Optional[types.Content]:
+def before_infographic_generator(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log start of infographic generation phase."""
     logger.info("=" * 60)
     logger.info("STAGE 5: INFOGRAPHIC GENERATION - Starting")
@@ -146,12 +168,17 @@ def before_infographic_generator(callback_context: CallbackContext) -> Optional[
 # AFTER AGENT CALLBACKS
 # ============================================================================
 
-def after_market_research(callback_context: CallbackContext) -> Optional[types.Content]:
+
+def after_market_research(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log completion of market research and update tracking."""
     findings = callback_context.state.get("market_research_findings", "")
     findings_len = len(findings) if isinstance(findings, str) else 0
 
-    logger.info(f"STAGE 1: COMPLETE - Market research findings: {findings_len} characters")
+    logger.info(
+        f"STAGE 1: COMPLETE - Market research findings: {findings_len} characters"
+    )
 
     # Update stages completed
     stages = callback_context.state.get("stages_completed", [])
@@ -161,12 +188,16 @@ def after_market_research(callback_context: CallbackContext) -> Optional[types.C
     return None
 
 
-def after_competitor_mapping(callback_context: CallbackContext) -> Optional[types.Content]:
+def after_competitor_mapping(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log completion of competitor mapping."""
     analysis = callback_context.state.get("competitor_analysis", "")
     analysis_len = len(analysis) if isinstance(analysis, str) else 0
 
-    logger.info(f"STAGE 2A: COMPLETE - Competitor analysis: {analysis_len} characters")
+    logger.info(
+        f"STAGE 2A: COMPLETE - Competitor analysis: {analysis_len} characters"
+    )
 
     stages = callback_context.state.get("stages_completed", [])
     stages.append("competitor_mapping")
@@ -175,7 +206,9 @@ def after_competitor_mapping(callback_context: CallbackContext) -> Optional[type
     return None
 
 
-def after_gap_analysis(callback_context: CallbackContext) -> Optional[types.Content]:
+def after_gap_analysis(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log completion of gap analysis and extract executed Python code."""
     gap = callback_context.state.get("gap_analysis", "")
     gap_len = len(gap) if isinstance(gap, str) else 0
@@ -191,7 +224,9 @@ def after_gap_analysis(callback_context: CallbackContext) -> Optional[types.Cont
 
     if extracted_code:
         callback_context.state["gap_analysis_code"] = extracted_code
-        logger.info(f"  Extracted Python code: {len(extracted_code)} characters")
+        logger.info(
+            f"  Extracted Python code: {len(extracted_code)} characters"
+        )
     else:
         logger.info("  No Python code blocks found to extract")
 
@@ -208,46 +243,52 @@ def _extract_code_from_invocation(callback_context: CallbackContext) -> str:
 
     try:
         # Access via the private _invocation_context as shown in ADK docs
-        invocation = getattr(callback_context, '_invocation_context', None) or \
-                     getattr(callback_context, 'invocation_context', None)
+        invocation = getattr(
+            callback_context, "_invocation_context", None
+        ) or getattr(callback_context, "invocation_context", None)
 
         if not invocation:
             logger.debug("No invocation context available")
             return ""
 
         # Access session from invocation context
-        session = getattr(invocation, 'session', None)
+        session = getattr(invocation, "session", None)
         if not session:
             logger.debug("No session in invocation context")
             return ""
 
         # Get events from session
-        events = getattr(session, 'events', None) or []
+        events = getattr(session, "events", None) or []
         logger.debug(f"Found {len(events)} events in session")
 
         for event in events:
             # Get content from event
-            content = getattr(event, 'content', None)
+            content = getattr(event, "content", None)
             if not content:
                 continue
 
             # Get parts from content
-            parts = getattr(content, 'parts', None) or []
+            parts = getattr(content, "parts", None) or []
             for part in parts:
                 # Check for executable_code (Gemini native code execution)
-                exec_code = getattr(part, 'executable_code', None)
+                exec_code = getattr(part, "executable_code", None)
                 if exec_code:
-                    code = getattr(exec_code, 'code', None)
+                    code = getattr(exec_code, "code", None)
                     if code and code.strip():
                         code_blocks.append(code.strip())
-                        logger.debug(f"Found executable_code: {len(code)} chars")
+                        logger.debug(
+                            f"Found executable_code: {len(code)} chars"
+                        )
 
         if code_blocks:
-            logger.info(f"  Found {len(code_blocks)} code blocks from session events")
+            logger.info(
+                f"  Found {len(code_blocks)} code blocks from session events"
+            )
 
     except Exception as e:
         logger.warning(f"Error extracting code from invocation context: {e}")
-        import traceback
+        
+
         logger.debug(traceback.format_exc())
 
     return "\n\n# --- Next Code Block ---\n\n".join(code_blocks)
@@ -255,14 +296,14 @@ def _extract_code_from_invocation(callback_context: CallbackContext) -> str:
 
 def _extract_python_code_from_content(content: str) -> str:
     """Extract Python code blocks from markdown content."""
-    import re
+    
 
     if not content:
         return ""
 
     # Match fenced code blocks with python language specifier
     code_blocks = []
-    pattern = r'```(?:python|py)\s*\n(.*?)```'
+    pattern = r"```(?:python|py)\s*\n(.*?)```"
     matches = re.findall(pattern, content, re.DOTALL | re.IGNORECASE)
 
     for match in matches:
@@ -273,7 +314,9 @@ def _extract_python_code_from_content(content: str) -> str:
     return "\n\n# ---\n\n".join(code_blocks)
 
 
-def after_strategy_advisor(callback_context: CallbackContext) -> Optional[types.Content]:
+def after_strategy_advisor(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log completion and save JSON artifact."""
     report = callback_context.state.get("strategic_report", {})
     logger.info("STAGE 3: COMPLETE - Strategic report generated")
@@ -289,10 +332,11 @@ def after_strategy_advisor(callback_context: CallbackContext) -> Optional[types.
 
             json_str = json.dumps(report_dict, indent=2, default=str)
             json_artifact = types.Part.from_bytes(
-                data=json_str.encode('utf-8'),
-                mime_type="application/json"
+                data=json_str.encode("utf-8"), mime_type="application/json"
             )
-            callback_context.save_artifact("intelligence_report.json", json_artifact)
+            callback_context.save_artifact(
+                "intelligence_report.json", json_artifact
+            )
             logger.info("  Saved artifact: intelligence_report.json")
         except Exception as e:
             logger.warning(f"  Failed to save JSON artifact: {e}")
@@ -304,7 +348,9 @@ def after_strategy_advisor(callback_context: CallbackContext) -> Optional[types.
     return None
 
 
-def after_report_generator(callback_context: CallbackContext) -> Optional[types.Content]:
+def after_report_generator(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log completion of report generation.
 
     Note: The artifact is now saved directly in the generate_html_report tool
@@ -322,7 +368,9 @@ def after_report_generator(callback_context: CallbackContext) -> Optional[types.
     return None
 
 
-def after_infographic_generator(callback_context: CallbackContext) -> Optional[types.Content]:
+def after_infographic_generator(
+    callback_context: CallbackContext,
+) -> types.Content | None:
     """Log completion of infographic generation.
 
     Note: The artifact is now saved directly in the generate_infographic tool

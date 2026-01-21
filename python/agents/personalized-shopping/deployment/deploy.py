@@ -16,9 +16,10 @@ import os
 
 import vertexai
 from dotenv import load_dotenv
-from personalized_shopping.agent import root_agent
 from vertexai import agent_engines
 from vertexai.preview.reasoning_engines import AdkApp
+
+from personalized_shopping.agent import root_agent
 
 load_dotenv()
 

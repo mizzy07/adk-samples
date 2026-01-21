@@ -18,9 +18,10 @@ import textwrap
 
 import dotenv
 import pytest
-from academic_research.agent import root_agent
 from google.adk.runners import InMemoryRunner
 from google.genai import types
+
+from academic_research.agent import root_agent
 
 pytest_plugins = ("pytest_asyncio",)
 

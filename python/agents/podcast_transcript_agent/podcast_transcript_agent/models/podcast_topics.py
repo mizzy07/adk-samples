@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List
 
 from pydantic import BaseModel
 
@@ -29,4 +28,4 @@ class PodcastTopics(BaseModel):
     """A model for the main topic and sub-topics of a podcast episode."""
 
     main_topic: str
-    sub_topics: List[Topic]
+    sub_topics: list[Topic]

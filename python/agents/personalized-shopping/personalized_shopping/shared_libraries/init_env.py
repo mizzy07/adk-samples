@@ -14,6 +14,7 @@
 
 import gym
 
+# Register the environment
 gym.envs.registration.register(
     id="WebAgentTextEnv-v0",
     entry_point=(
@@ -23,25 +24,29 @@ gym.envs.registration.register(
 
 
 def init_env(num_products):
-    env = gym.make(
+    return gym.make(
         "WebAgentTextEnv-v0",
         observation_mode="text",
         num_products=num_products,
     )
-    return env
 
 
-num_product_items = 50000
-_webshop_env = None
+# Configuration constants
+NUM_PRODUCT_ITEMS = 50000
+
+
+class EnvRegistry:
+    """Container to manage the singleton environment instance."""
+
+    _webshop_env = None
 
 
 def get_webshop_env():
-    """Lazy-load the webshop environment on first access."""
-    global _webshop_env
-    if _webshop_env is None:
-        _webshop_env = init_env(num_product_items)
-        _webshop_env.reset()
+    """Lazy-load the webshop environment on first access without using global."""
+    if EnvRegistry._webshop_env is None:
+        EnvRegistry._webshop_env = init_env(NUM_PRODUCT_ITEMS)
+        EnvRegistry._webshop_env.reset()
         print(
-            f"Finished initializing WebshopEnv with {num_product_items} items."
+            f"Finished initializing WebshopEnv with {NUM_PRODUCT_ITEMS} items."
         )
-    return _webshop_env
+    return EnvRegistry._webshop_env

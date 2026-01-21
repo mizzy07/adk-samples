@@ -38,12 +38,16 @@ env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 # Detect authentication mode from environment
-USE_VERTEX_AI = os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "FALSE").upper() == "TRUE"
+USE_VERTEX_AI = (
+    os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "FALSE").upper() == "TRUE"
+)
 
 # Vertex AI Configuration (for production deployment)
 if USE_VERTEX_AI:
     GOOGLE_CLOUD_PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT", "")
-    GOOGLE_CLOUD_LOCATION = os.environ.get("GOOGLE_CLOUD_LOCATION", "us-central1")
+    GOOGLE_CLOUD_LOCATION = os.environ.get(
+        "GOOGLE_CLOUD_LOCATION", "us-central1"
+    )
     GOOGLE_API_KEY = ""  # Not used in Vertex AI mode
 else:
     # AI Studio Configuration (for local development)
@@ -65,7 +69,9 @@ MAPS_API_KEY = os.environ.get("MAPS_API_KEY", "")
 FAST_MODEL = "gemini-2.5-pro"
 PRO_MODEL = "gemini-2.5-pro"
 CODE_EXEC_MODEL = "gemini-2.5-pro"
-IMAGE_MODEL = "gemini-3-pro-image-preview"  # Gemini 3 for native image generation
+IMAGE_MODEL = (
+    "gemini-3-pro-image-preview"  # Gemini 3 for native image generation
+)
 
 # Option 2: Gemini 3 Pro Preview (latest features, may have availability issues)
 # FAST_MODEL = "gemini-3-pro-preview"

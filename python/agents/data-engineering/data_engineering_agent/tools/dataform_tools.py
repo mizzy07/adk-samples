@@ -19,7 +19,7 @@ within LLM-generated output, uploading and compiling those files in Dataform,
 and attempting to automatically fix compilation errors using an LLM.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from google.api_core.exceptions import GoogleAPIError
 from google.cloud import dataform_v1
@@ -90,7 +90,7 @@ def delete_file_from_dataform(file_path: str) -> str:
         return error_msg
 
 
-def compile_dataform(compile_only: bool = False) -> Dict[str, Any]:
+def compile_dataform(compile_only: bool = False) -> dict[str, Any]:
     """Compile Dataform pipeline and get overview of the pipeline DAG.
 
     Args:
@@ -114,7 +114,9 @@ def compile_dataform(compile_only: bool = False) -> Dict[str, Any]:
             parent=repository_path, compilation_result=compilation_result
         )
 
-        compilation_results = DATAFORM_CLIENT.create_compilation_result(request=request)
+        compilation_results = DATAFORM_CLIENT.create_compilation_result(
+            request=request
+        )
 
         if compilation_results.compilation_errors:
             print("Compilation errors found!")
@@ -188,7 +190,7 @@ def read_file_from_dataform(file_path: str) -> str:
         return error_msg
 
 
-def search_files_in_dataform(pattern: Optional[str] = None) -> List[str]:
+def search_files_in_dataform(pattern: str | None = None) -> list[str]:
     """Search for files in Dataform.
 
     Args:
@@ -215,7 +217,7 @@ def search_files_in_dataform(pattern: Optional[str] = None) -> List[str]:
         return []
 
 
-def get_dataform_execution_logs(workflow_invocation_id: str) -> Dict[str, Any]:
+def get_dataform_execution_logs(workflow_invocation_id: str) -> dict[str, Any]:
     """Use this function to get execution logs for a Dataform workflow invocation.
 
     Args:
@@ -244,13 +246,22 @@ def get_dataform_execution_logs(workflow_invocation_id: str) -> Dict[str, Any]:
             action_detail = {
                 "name": action.target.name,
                 "status": (
-                    dataform_v1.WorkflowInvocationAction.State(action.state).name
+                    dataform_v1.WorkflowInvocationAction.State(
+                        action.state
+                    ).name
                 ),
             }
-            if action.state == dataform_v1.WorkflowInvocationAction.State.FAILED:
+            if (
+                action.state
+                == dataform_v1.WorkflowInvocationAction.State.FAILED
+            ):
                 action_detail["error_message"] = action.failure_reason
-            if action.canonical_target.name:  # Check if canonical_target has name
-                action_detail["canonical_target_name"] = action.canonical_target.name
+            if (
+                action.canonical_target.name
+            ):  # Check if canonical_target has name
+                action_detail["canonical_target_name"] = (
+                    action.canonical_target.name
+                )
             if action.bigquery_action:  # Check if bigquery_action exists
                 action_detail["job_id"] = action.bigquery_action.job_id
 
@@ -282,7 +293,9 @@ def get_dataform_execution_logs(workflow_invocation_id: str) -> Dict[str, Any]:
         return {"status": "success", "actions": actions_details}
 
     except GoogleAPIError as e:
-        print(f"Error getting execution logs for '{workflow_invocation_id}': {e}")
+        print(
+            f"Error getting execution logs for '{workflow_invocation_id}': {e}"
+        )
         return {
             "status": "error",
             "error_message": (
@@ -292,8 +305,8 @@ def get_dataform_execution_logs(workflow_invocation_id: str) -> Dict[str, Any]:
 
 
 def execute_dataform_workflow(
-    workflow_name: str, params: Optional[Dict[str, Any]] = None
-) -> Dict[str, Any]:
+    workflow_name: str, params: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Execute a Dataform workflow with optional parameters.
 
     Args:
@@ -316,8 +329,8 @@ def execute_dataform_workflow(
 
         # Add parameters if provided
         if params:
-            workflow_invocation.invocation_config = dataform_v1.InvocationConfig(
-                parameters=params
+            workflow_invocation.invocation_config = (
+                dataform_v1.InvocationConfig(parameters=params)
             )
 
         request = dataform_v1.CreateWorkflowInvocationRequest(
@@ -343,7 +356,7 @@ def execute_dataform_workflow(
         return {"status": "error", "error_message": error_msg}
 
 
-def get_dataform_repo_link() -> Dict[str, str]:
+def get_dataform_repo_link() -> dict[str, str]:
     """Generate the GCP console link for the Dataform repository.
 
     Returns:

@@ -32,9 +32,15 @@ import sys
 from pathlib import Path
 
 import uvicorn
+
+# Import AG-UI middleware (CopilotKit official package)
+from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+# Import the EXISTING root_agent - no modifications needed
+from app.agent import root_agent
 
 # Add app directory to path for imports
 # Structure: app/frontend/backend/main.py
@@ -46,12 +52,6 @@ sys.path.insert(0, str(project_root))
 env_path = app_dir / ".env"
 if env_path.exists():
     load_dotenv(env_path)
-
-# Import AG-UI middleware (CopilotKit official package)
-from ag_ui_adk import ADKAgent, add_adk_fastapi_endpoint
-
-# Import the EXISTING root_agent - no modifications needed
-from app.agent import root_agent
 
 # Create AG-UI wrapper around the existing ADK agent
 # Increase timeout for Strategy Synthesis which uses extended thinking
@@ -95,7 +95,7 @@ add_adk_fastapi_endpoint(app, adk_agent, path="/")
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", "8000"))
     print(f"Starting AG-UI server at http://0.0.0.0:{port}")
     print("Frontend should connect to this URL")
     uvicorn.run(app, host="0.0.0.0", port=port)

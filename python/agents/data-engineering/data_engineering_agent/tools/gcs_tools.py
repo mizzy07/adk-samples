@@ -19,7 +19,7 @@ files in buckets,
 and reading files with various options (head, tail, or full content).
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from google.cloud import storage
 
@@ -31,7 +31,7 @@ def get_gcs_client() -> storage.Client:
     return storage.Client(project=config.project_id)
 
 
-def validate_bucket_exists_tool(bucket_name: str) -> Dict[str, Any]:
+def validate_bucket_exists_tool(bucket_name: str) -> dict[str, Any]:
     """Validate if a GCS bucket exists.
 
     Args:
@@ -53,22 +53,32 @@ def validate_bucket_exists_tool(bucket_name: str) -> Dict[str, Any]:
                 "bucket_name": bucket_name,
                 "metadata": {
                     "created": (
-                        bucket.time_created.isoformat() if bucket.time_created else None
+                        bucket.time_created.isoformat()
+                        if bucket.time_created
+                        else None
                     ),
-                    "updated": bucket.updated.isoformat() if bucket.updated else None,
+                    "updated": bucket.updated.isoformat()
+                    if bucket.updated
+                    else None,
                     "location": bucket.location,
                     "storage_class": bucket.storage_class,
                     "labels": bucket.labels,
                 },
             }
         else:
-            return {"status": "success", "exists": False, "bucket_name": bucket_name}
+            return {
+                "status": "success",
+                "exists": False,
+                "bucket_name": bucket_name,
+            }
 
     except Exception as e:
         return {"status": "error", "error": str(e)}
 
 
-def validate_file_exists_tool(bucket_name: str, file_path: str) -> Dict[str, Any]:
+def validate_file_exists_tool(
+    bucket_name: str, file_path: str
+) -> dict[str, Any]:
     """Validate if a file exists in a GCS bucket.
 
     Args:
@@ -95,9 +105,13 @@ def validate_file_exists_tool(bucket_name: str, file_path: str) -> Dict[str, Any
                     "size": blob.size,
                     "content_type": blob.content_type,
                     "created": (
-                        blob.time_created.isoformat() if blob.time_created else None
+                        blob.time_created.isoformat()
+                        if blob.time_created
+                        else None
                     ),
-                    "updated": blob.updated.isoformat() if blob.updated else None,
+                    "updated": blob.updated.isoformat()
+                    if blob.updated
+                    else None,
                     "md5_hash": blob.md5_hash,
                     "generation": blob.generation,
                 },
@@ -116,10 +130,10 @@ def validate_file_exists_tool(bucket_name: str, file_path: str) -> Dict[str, Any
 
 def list_bucket_files_tool(
     bucket_name: str,
-    prefix: Optional[str] = None,
-    delimiter: Optional[str] = None,
-    max_results: Optional[int] = None,
-) -> Dict[str, Any]:
+    prefix: str | None = None,
+    delimiter: str | None = None,
+    max_results: int | None = None,
+) -> dict[str, Any]:
     """List files in a GCS bucket with optional filtering.
 
     Args:
@@ -154,9 +168,13 @@ def list_bucket_files_tool(
                         "size": blob.size,
                         "content_type": blob.content_type,
                         "created": (
-                            blob.time_created.isoformat() if blob.time_created else None
+                            blob.time_created.isoformat()
+                            if blob.time_created
+                            else None
                         ),
-                        "updated": blob.updated.isoformat() if blob.updated else None,
+                        "updated": blob.updated.isoformat()
+                        if blob.updated
+                        else None,
                     }
                 )
             else:
@@ -179,7 +197,7 @@ def list_bucket_files_tool(
 
 def read_gcs_file_tool(
     bucket_name: str, file_path: str, mode: str = "full", num_lines: int = 10
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Read content from a GCS file with various options.
 
     Args:

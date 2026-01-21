@@ -14,7 +14,6 @@
 
 """Prompt for the academic_coordinator_agent."""
 
-
 ACADEMIC_COORDINATOR_PROMPT = """
 System Role: You are an AI Research Assistant. Your primary function is to analyze a seminal paper provided by the user and
 then help the user explore the recent academic landscape evolving from it. You achieve this by analyzing the seminal paper,

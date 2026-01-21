@@ -8,32 +8,43 @@ authors = [
 ]
 license = {text = "Apache License 2.0"}
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
+
 dependencies = [
-    "env (>=0.1.0,<0.2.0)",
-    "google-cloud-bigquery (>=3.11.4)",
-    "google-cloud-dataform (>=0.4.0)",
-    "google-api-core (>=2.15.0)",
-    "google-auth (>=2.23.0)",
-    "google-cloud-core (>=2.3.3)",
-    "protobuf (>=4.24.4)",
-    "typing-extensions (>=4.8.0)",
-    "python-dotenv (>=1.0.0)",
-    "google-adk (>=0.1.0)",
+    "env>=0.1.0,<0.2.0",
+    "google-cloud-bigquery>=3.11.4",
+    "google-cloud-dataform>=0.4.0",
+    "google-api-core>=2.15.0",
+    "google-auth>=2.23.0",
+    "google-cloud-core>=2.3.3",
+    "protobuf>=4.24.4",
+    "typing-extensions>=4.8.0",
+    "python-dotenv>=1.0.0",
+    "google-adk>=0.1.0",
 ]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.5"
-black = "^25.1.0"
-google-adk = { version = "^1.0.0", extras = ["eval"] }
-pytest-asyncio = "^0.26.0"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.26.0",
+    "google-adk[eval]>=1.0.0",
+]
+deployment = [
+    "absl-py>=2.2.1",
+]
 
-[tool.poetry.group.deployment]
-optional = true
+[tool.ruff]
+extend = "../../../pyproject.toml"
 
-[tool.poetry.group.deployment.dependencies]
-absl-py = "^2.2.1"
+[tool.ruff.lint]
+ignore = ["C901"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["data_engineering_agent"]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"

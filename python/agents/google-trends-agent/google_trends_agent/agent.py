@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from google.adk.agents import LlmAgent, SequentialAgent
+
 from google_trends_agent.prompt import load_agent_instructions
 from google_trends_agent.tools import execute_bigquery_sql
 

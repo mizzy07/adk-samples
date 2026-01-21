@@ -12,7 +12,6 @@ import time
 import traceback
 import uuid
 from pathlib import Path
-from typing import Union
 
 from google.adk import runners
 from google.adk.agents import RunConfig, llm_agent
@@ -25,17 +24,17 @@ from . import swebench_environment, terminalbench_environment
 
 logger = logging.getLogger(__name__)
 SYSTEM_INSTRUCTIONS = "You are a software engineering agent solving a issue reported by a user. You are working in the background and do not have the ability to discuss with the user. Make your best attempt at implementing a solution, and call the `submit` tool when done."
-
+TIMEOUT_EXIT_CODE = 124
+MEMORY_LIMIT_EXIT_CODE = 137
+MAX_VERIFICATION_TURN_COUNT = 40
+MAX_STATE_SIZE_BYTES = 1024
 
 class Orchestrator:
     """Orchestrator for the benchmark agent."""
 
     def __init__(
         self,
-        env: Union[
-            swebench_environment.SWEBenchEnvironment,
-            terminalbench_environment.TerminalBenchEnvironment,
-        ],
+        env: swebench_environment.SWEBenchEnvironment | terminalbench_environment.TerminalBenchEnvironment,
         benchmark_type: str = "swebench",
     ):
         """Initialize orchestrator with an environment.
@@ -83,7 +82,9 @@ class Orchestrator:
         end_line = int(end_line)
 
         # Use 'cat' to read the file content
-        exit_code, file_content = self.env.execute(f"cat {shlex.quote(file_path)}")
+        exit_code, file_content = self.env.execute(
+            f"cat {shlex.quote(file_path)}"
+        )
 
         if exit_code != 0:
             logger.error("Error: file %s not found or not readable.", file_path)
@@ -124,7 +125,9 @@ class Orchestrator:
         if start_line > 1:
             preamble += f"\n... lines 1-{start_line - 1} above omitted ...\n"
 
-        content_to_show = "\n".join(file_content_lines[start_line - 1 : end_line])
+        content_to_show = "\n".join(
+            file_content_lines[start_line - 1 : end_line]
+        )
 
         lines_after_omitted = len(file_content_lines) - end_line
         if lines_after_omitted > 0:
@@ -162,7 +165,9 @@ class Orchestrator:
             if dir_name:
                 self.env.execute(f"mkdir -p {shlex.quote(dir_name)}")
 
-            self.env.copy_to(tmp_file_path, os.path.join(self.working_dir, file_path))
+            self.env.copy_to(
+                tmp_file_path, os.path.join(self.working_dir, file_path)
+            )
 
             return f"File {file_path} created successfully."
         except Exception as e:  # pylint: disable=broad-exception-caught
@@ -217,7 +222,9 @@ class Orchestrator:
                 return "Error: Invalid diff format. Missing SEARCH/REPLACE markers."
 
             # Read the file content
-            exit_code, file_content = self.env.execute(f"cat {shlex.quote(file_path)}")
+            exit_code, file_content = self.env.execute(
+                f"cat {shlex.quote(file_path)}"
+            )
             if exit_code != 0:
                 return f"Error: File {file_path} not found or not readable."
 
@@ -321,13 +328,17 @@ class Orchestrator:
         max_lines = 500
 
         # Use 'timeout' command to enforce the timeout
-        cmd_with_timeout = f"timeout {timeout_seconds}s /bin/sh -c {shlex.quote(cmd)}"
+        cmd_with_timeout = (
+            f"timeout {timeout_seconds}s /bin/sh -c {shlex.quote(cmd)}"
+        )
 
         exit_code, output = self.env.execute(cmd_with_timeout, demux=True)
 
-        if exit_code == 124:
-            return f"Error: The command timed out after {timeout_seconds} seconds."
-        elif exit_code == 137:
+        if exit_code == TIMEOUT_EXIT_CODE:
+            return (
+                f"Error: The command timed out after {timeout_seconds} seconds."
+            )
+        elif exit_code == MEMORY_LIMIT_EXIT_CODE:
             return "Error: The command exceeded the memory limit"
 
         stdout, stderr = output
@@ -335,11 +346,15 @@ class Orchestrator:
         is_output_truncated = False
 
         if stdout:
-            stdout, is_out_truncated = self._maybe_truncate_output(stdout, max_lines)
+            stdout, is_out_truncated = self._maybe_truncate_output(
+                stdout, max_lines
+            )
             formatted_output += f"Stdout:\n{stdout}\n"
             is_output_truncated |= is_out_truncated
         if stderr:
-            stderr, is_err_truncated = self._maybe_truncate_output(stderr, max_lines)
+            stderr, is_err_truncated = self._maybe_truncate_output(
+                stderr, max_lines
+            )
             formatted_output += f"Stderr:\n{stderr}\n"
             is_output_truncated |= is_err_truncated
 
@@ -386,7 +401,9 @@ class Orchestrator:
             return output, False
 
         lines = output.splitlines(keepends=True)
-        lines = [self._truncate_text(line, max_characters_per_line) for line in lines]
+        lines = [
+            self._truncate_text(line, max_characters_per_line) for line in lines
+        ]
         num_lines = len(lines)
 
         if num_lines <= max_lines:
@@ -411,7 +428,9 @@ class Orchestrator:
             return text
 
         num_truncated_chars = len(text) - max_length
-        ellipsis = f"(...line too long, truncated {num_truncated_chars} characters...)"
+        ellipsis = (
+            f"(...line too long, truncated {num_truncated_chars} characters...)"
+        )
 
         # Distribute these characters between the prefix and the suffix.
         # If max_length is odd, the prefix gets the extra character.
@@ -461,7 +480,10 @@ class Orchestrator:
                     if test_file.suffix == ".sh":
                         self.env.execute(f"chmod +x /tests/{test_file.name}")
                 except Exception as e:  # pylint: disable=broad-exception-caught
-                    return False, f"Failed to copy test file {test_file.name}: {e}"
+                    return (
+                        False,
+                        f"Failed to copy test file {test_file.name}: {e}",
+                    )
 
         # Copy run-tests.sh to the container
         try:
@@ -474,14 +496,14 @@ class Orchestrator:
             return False, f"Failed to copy run-tests.sh: {e}"
 
         # Run run-tests.sh with TEST_DIR environment variable set
-        full_command = f"export TEST_DIR=/tests && bash {run_tests_path_in_container}"
+        full_command = (
+            f"export TEST_DIR=/tests && bash {run_tests_path_in_container}"
+        )
 
         exit_code, output = self.env.execute(full_command)
         all_passed = exit_code == 0
 
-        results = (
-            f"Test script: run-tests.sh\nPassed: {all_passed}\nOutput:\n{output}\n"
-        )
+        results = f"Test script: run-tests.sh\nPassed: {all_passed}\nOutput:\n{output}\n"
 
         return all_passed, results
 
@@ -519,7 +541,6 @@ class Orchestrator:
             if exit_code != 0:
                 result = f"Error: Failed to submit. Output:\\n{output}"
             else:
-
                 # Check for meaningful edits
                 changed_files_cmd = "git status --porcelain | awk '{print $2}'"
                 _, changed_files_out = self.env.execute(changed_files_cmd)
@@ -549,7 +570,7 @@ class Orchestrator:
 
                 self.num_submit_calls += 1
 
-                if self.num_submit_calls == 1 and self.turn_count < 40:
+                if self.num_submit_calls == 1 and self.turn_count < MAX_VERIFICATION_TURN_COUNT:
                     verification_prompt = textwrap.dedent(
                         f"""
                         You are trying to submit your work, but before that, please carefully verify that you have performed the following steps as described in your instructions:
@@ -584,7 +605,7 @@ class Orchestrator:
         # Clear large values from the state as well.
         if session_arg.state:
             for key in list(session_arg.state):
-                if sys.getsizeof(session_arg.state[key]) > 1024:
+                if sys.getsizeof(session_arg.state[key]) > MAX_STATE_SIZE_BYTES:
                     session_arg.state[key] = "removed"
 
         return session_arg
@@ -612,13 +633,15 @@ class Orchestrator:
                 "instance_id": self.env.instance.get("instance_id", "unknown"),
                 "repo": self.env.instance.get("repo", "unknown"),
                 "max_turns": max_turns,
-                "problem_statement": self.env.instance.get("problem_statement", ""),
+                "problem_statement": self.env.instance.get(
+                    "problem_statement", ""
+                ),
             }
         ]
         task_specification = (
             textwrap.dedent(
                 f"""\
-            I need you to solve the following issue in {self.env.instance['repo']}:
+            I need you to solve the following issue in {self.env.instance["repo"]}:
             <issue>
             {{PROBLEM_STATEMENT}}
             </issue>
@@ -696,7 +719,9 @@ class Orchestrator:
         )
 
         current_session = self._remove_inline_data_binary(current_session)
-        self.trajectory.extend(json.loads(current_session.model_dump_json())["events"])
+        self.trajectory.extend(
+            json.loads(current_session.model_dump_json())["events"]
+        )
 
         end_time = time.time()
         await runner.close()

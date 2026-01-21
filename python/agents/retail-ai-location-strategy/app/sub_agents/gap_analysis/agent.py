@@ -22,9 +22,8 @@ from google.adk.agents import LlmAgent
 from google.adk.code_executors import BuiltInCodeExecutor
 from google.genai import types
 
-from ...config import CODE_EXEC_MODEL, RETRY_INITIAL_DELAY, RETRY_ATTEMPTS
-from ...callbacks import before_gap_analysis, after_gap_analysis
-
+from ...callbacks import after_gap_analysis, before_gap_analysis
+from ...config import CODE_EXEC_MODEL, RETRY_ATTEMPTS, RETRY_INITIAL_DELAY
 
 GAP_ANALYSIS_INSTRUCTION = """You are a data scientist analyzing market opportunities using quantitative methods.
 
@@ -77,7 +76,7 @@ For each identified zone, compute:
 
 **Opportunity Metrics:**
 - Demand Signal: Based on population, income, infrastructure
-- Market Saturation Index: (Competitors × Quality) / Demand
+- Market Saturation Index: (Competitors * Quality) / Demand
 - Viability Score: Multi-factor weighted score
 
 ### Step 4: Zone Categorization

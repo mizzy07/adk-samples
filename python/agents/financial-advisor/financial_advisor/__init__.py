@@ -18,7 +18,7 @@ import os
 
 import google.auth
 
-from . import agent  # noqa: F401
+from . import agent
 
 _, project_id = google.auth.default()
 os.environ.setdefault("GOOGLE_CLOUD_PROJECT", project_id)

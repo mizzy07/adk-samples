@@ -27,6 +27,10 @@ from .normalize import normalize_color
 nlp = spacy.load("en_core_web_sm")
 
 PRICE_RANGE = [10.0 * i for i in range(1, 100)]
+MIN_PRICE_RANGE = 2
+MAX_TITLE_SCORE = 0.2
+MIN_TITLE_SCORE = 0.1
+SCORE_GOAL = 85
 
 
 def get_goals(all_products, product_prices, human_goals=True):
@@ -53,7 +57,7 @@ def get_human_goals(all_products, product_prices):
             if product_prices is not None:
                 price = product_prices[asin]
                 price_range = [p for p in PRICE_RANGE if p > price][:4]
-                if len(price_range) >= 2:
+                if len(price_range) >= MIN_PRICE_RANGE:
                     _, price_upper = sorted(random.sample(price_range, 2))
                     price_text = (
                         f", and price lower than {price_upper:.2f} dollars"
@@ -104,7 +108,7 @@ def get_synthetic_goals(all_products, product_prices):
         if product_prices is not None:
             price = product_prices[asin]
             price_range = [p for p in PRICE_RANGE if p > price][:4]
-            if len(price_range) >= 2:
+            if len(price_range) >= MIN_PRICE_RANGE:
                 _, price_upper = sorted(random.sample(price_range, 2))
                 price_text = f", and price lower than {price_upper:.2f} dollars"
             else:
@@ -124,7 +128,7 @@ def get_synthetic_goals(all_products, product_prices):
             )
         )
         for combination in combinations:
-            goal_options = dict()
+            goal_options = {}
             for i, o in enumerate(combination):
                 #                option_text.append(f'{option_names[i]}: {o}')
                 goal_options[option_names[i]] = o
@@ -159,6 +163,7 @@ def get_synthetic_goals(all_products, product_prices):
 def get_type_reward(purchased_product, goal):
     """Determines the type reward - captures whether chosen product is in the same category"""
     query_match = purchased_product["query"] == goal["query"]
+    min_category_matches = 2
 
     # Check number of unique categories that match, ignoring order
     purchased_product_category = [
@@ -168,7 +173,8 @@ def get_type_reward(purchased_product, goal):
         x.strip() for x in goal["product_category"].split("›")
     ]
     category_match = (
-        len(set(purchased_product_category) & set(goal_product_category)) >= 2
+        len(set(purchased_product_category) & set(goal_product_category))
+        >= min_category_matches
     )
 
     # Determine whether types align based on product name similarity
@@ -198,22 +204,22 @@ def get_type_reward(purchased_product, goal):
     r_type = 1.0
 
     # Adjust r_type score based on query, category title matching/scores
-    match = query_match or category_match or title_score > 0.2
+    match = query_match or category_match or title_score > MAX_TITLE_SCORE
     if not match:
         r_type = 0.5
 
-    if title_score < 0.1:
+    if title_score < MIN_TITLE_SCORE:
         r_type = 0.1
 
     if title_score == 0.0:
         r_type = 0.0
 
-    return dict(
-        r_type=r_type,
-        query_match=query_match,
-        category_match=category_match,
-        title_score=title_score,
-    )
+    return {
+        "r_type": r_type,
+        "query_match": query_match,
+        "category_match": category_match,
+        "title_score": title_score,
+    }
 
 
 def get_attribute_reward(purchased_product, goal):
@@ -227,7 +233,7 @@ def get_attribute_reward(purchased_product, goal):
         # Check whether goal attribute found in purchased product attribute list
         for p_attr in purchased_attrs:
             score = fuzz.token_set_ratio(p_attr, g_attr)
-            if score > 85:
+            if score > SCORE_GOAL:
                 num_attr_matches += 1
                 matched = True
                 break
@@ -254,7 +260,7 @@ def get_option_reward(purchased_options, goal_options):
     for g_option in goal_options:
         for p_option in purchased_options:
             score = fuzz.token_set_ratio(p_option, g_option)
-            if score > 85:
+            if score > SCORE_GOAL:
                 num_option_matches += 1
                 break
 

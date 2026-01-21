@@ -96,7 +96,9 @@ async def main():
             USER_ID,
             APP_NAME,
             runner,
-            types.Content(role="user", parts=[types.Part.from_text(text=user_input)]),
+            types.Content(
+                role="user", parts=[types.Part.from_text(text=user_input)]
+            ),
             session_id=session.id,
         )
         print(f"[{author}]: {message}")

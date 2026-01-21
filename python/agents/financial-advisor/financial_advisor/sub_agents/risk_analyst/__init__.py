@@ -14,4 +14,4 @@
 
 """Risk Analysis Agent for providing the final risk evaluation"""
 
-from .agent import risk_analyst_agent  # noqa: F401
+from .agent import risk_analyst_agent

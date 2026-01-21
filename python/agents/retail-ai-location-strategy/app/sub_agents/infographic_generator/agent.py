@@ -21,10 +21,12 @@ capabilities to provide an executive-ready visual summary of the analysis.
 from google.adk.agents import LlmAgent
 from google.genai import types
 
-from ...config import FAST_MODEL, RETRY_INITIAL_DELAY, RETRY_ATTEMPTS
+from ...callbacks import (
+    after_infographic_generator,
+    before_infographic_generator,
+)
+from ...config import FAST_MODEL, RETRY_ATTEMPTS, RETRY_INITIAL_DELAY
 from ...tools import generate_infographic
-from ...callbacks import before_infographic_generator, after_infographic_generator
-
 
 INFOGRAPHIC_GENERATOR_INSTRUCTION = """You are a data visualization specialist creating executive-ready infographics.
 

@@ -74,7 +74,7 @@ class WebAgentTextEnv(gym.Env):
         session_prefix
         show_attrs
         """
-        super(WebAgentTextEnv, self).__init__()
+        super().__init__()
         self.observation_mode = observation_mode
         self.kwargs = kwargs
 
@@ -138,7 +138,7 @@ class WebAgentTextEnv(gym.Env):
         ):
             status = self.browser.click(action_arg, self.text_to_clickable)
         else:
-            status = dict(reward=0, done=False)
+            status = {"reward": 0, "done": False}
 
         # Update observation, state with the new action
         ob = self.observation
@@ -170,10 +170,10 @@ class WebAgentTextEnv(gym.Env):
         for opt in buying_options:
             opt_value = opt.get("value")
             self.text_to_clickable[f"{opt_value}"] = opt
-        return dict(
-            has_search_bar=has_search_bar,
-            clickables=list(self.text_to_clickable.keys()),
-        )
+        return {
+            "has_search_bar": has_search_bar,
+            "clickables": list(self.text_to_clickable.keys()),
+        }
 
     def get_image(self):
         """Scrape image from page HTML and return as a list of pixel values"""
@@ -230,11 +230,11 @@ class WebAgentTextEnv(gym.Env):
         The actual observation are likely to be a subset or reduced form of the
         state.
         """
-        return dict(
-            url=self.browser.current_url,
-            html=self.browser.page_source,
-            instruction_text=self.instruction_text,
-        )
+        return {
+            "url": self.browser.current_url,
+            "html": self.browser.page_source,
+            "instruction_text": self.instruction_text,
+        }
 
     def convert_html_to_text(self, html, simple=False):
         """Strip HTML of tags and add separators to convert observation into simple mode"""
@@ -382,7 +382,7 @@ class SimServer:
         # Set extraneous housekeeping variables
         self.weights = [goal["weight"] for goal in self.goals]
         self.cum_weights = [0] + np.cumsum(self.weights).tolist()
-        self.user_sessions = dict()
+        self.user_sessions = {}
         self.search_time = 0
         self.render_time = 0
         self.sample_time = 0
@@ -478,8 +478,8 @@ class SimServer:
 
         url = (
             f"{self.base_url}/item_page/{session_id}/"
-            f'{session["asin"]}/{keywords_url_string}/'
-            f'{session["page"]}/{option_string}'
+            f"{session['asin']}/{keywords_url_string}/"
+            f"{session['page']}/{option_string}"
         )
 
         html = map_action_to_html(
@@ -517,8 +517,8 @@ class SimServer:
         keywords_url_string = "+".join(session["keywords"])
         url = (
             f"{self.base_url}/item_sub_page/{session_id}/"
-            f'{session["asin"]}/{keywords_url_string}/{session["page"]}/'
-            f'{clickable_name}/{session["options"]}'
+            f"{session['asin']}/{keywords_url_string}/{session['page']}/"
+            f"{clickable_name}/{session['options']}"
         )
         html = map_action_to_html(
             f"click[{clickable_name}]",
@@ -559,7 +559,7 @@ class SimServer:
 
         url = (
             f"{self.base_url}/done/{session_id}/"
-            f'{session["asin"]}/{session["options"]}'
+            f"{session['asin']}/{session['options']}"
         )
         html = map_action_to_html(
             f"click[{END_BUTTON}]",
@@ -576,7 +576,7 @@ class SimServer:
 
     def receive(self, session_id, current_url, session_int=None, **kwargs):
         """Map action to the corresponding page"""
-        status = dict(reward=0.0, done=False)
+        status = {"reward": 0.0, "done": False}
 
         with app.app_context(), app.test_request_context():
             # Create/determine goal, instruction_text from current session
@@ -599,9 +599,9 @@ class SimServer:
                 instruction_text = (
                     self.assigned_instruction_text
                 )  # TODO: very hacky, should remove
-                self.user_sessions[session_id]["goal"][
-                    "instruction_text"
-                ] = instruction_text
+                self.user_sessions[session_id]["goal"]["instruction_text"] = (
+                    instruction_text
+                )
             session = self.user_sessions[session_id]
 
             if not kwargs:
@@ -614,7 +614,7 @@ class SimServer:
                         "page": None,
                         "asin": None,
                         "asins": set(),
-                        "options": dict(),
+                        "options": {},
                         "actions": defaultdict(int),
                     }
                 )

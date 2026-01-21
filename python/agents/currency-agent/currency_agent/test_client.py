@@ -74,7 +74,9 @@ async def run_single_turn_test(client: A2AClient) -> None:
     task_id: str = response.root.result.id
     print("--- ❔ Query Task ---")
     # query the task
-    get_request = GetTaskRequest(id=str(uuid4()), params=TaskQueryParams(id=task_id))
+    get_request = GetTaskRequest(
+        id=str(uuid4()), params=TaskQueryParams(id=task_id)
+    )
     get_response: GetTaskResponse = await client.get_task(get_request)
     print_json_response(get_response, "📥 Query Task Response")
 
@@ -84,17 +86,23 @@ async def run_multi_turn_test(client: A2AClient) -> None:
     print("--- 📝 Multi-Turn Request ---")
     # --- First Turn ---
 
-    first_turn_payload = create_send_message_payload(text="how much is 100 USD?")
+    first_turn_payload = create_send_message_payload(
+        text="how much is 100 USD?"
+    )
     request1 = SendMessageRequest(
         id=str(uuid4()), params=MessageSendParams(**first_turn_payload)
     )
-    first_turn_response: SendMessageResponse = await client.send_message(request1)
-    print_json_response(first_turn_response, "📥 Multi-Turn: First Turn Response")
+    first_turn_response: SendMessageResponse = await client.send_message(
+        request1
+    )
+    print_json_response(
+        first_turn_response, "📥 Multi-Turn: First Turn Response"
+    )
 
     context_id: str | None = None
-    if isinstance(first_turn_response.root, SendMessageSuccessResponse) and isinstance(
-        first_turn_response.root.result, Task
-    ):
+    if isinstance(
+        first_turn_response.root, SendMessageSuccessResponse
+    ) and isinstance(first_turn_response.root.result, Task):
         task: Task = first_turn_response.root.result
         context_id = task.context_id  # Capture context ID
 

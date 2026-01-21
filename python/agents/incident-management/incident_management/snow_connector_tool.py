@@ -15,7 +15,11 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi.openapi.models import OAuth2, OAuthFlowAuthorizationCode, OAuthFlows
+from fastapi.openapi.models import (
+    OAuth2,
+    OAuthFlowAuthorizationCode,
+    OAuthFlows,
+)
 from google.adk.auth import AuthCredential, AuthCredentialTypes, OAuth2Auth
 from google.adk.tools.application_integration_tool.application_integration_toolset import (
     ApplicationIntegrationToolset,
