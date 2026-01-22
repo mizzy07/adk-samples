@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,26 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Module containing definitions for the result type.
+from dotenv import load_dotenv
 
-It works like Rust's Result type.
-"""
+# Load environment variables from a .env file in the parent directory.
+# The override=True flag ensures that existing environment variables are updated.
+load_dotenv(override=True)
 
-import dataclasses
-from typing import Generic, TypeVar
-
-_T = TypeVar("_T")
-_E = TypeVar("_E")
-
-
-@dataclasses.dataclass(frozen=True)
-class Ok(Generic[_T]):
-    value: _T
-
-
-@dataclasses.dataclass(frozen=True)
-class Error(Generic[_E]):
-    error: _E
-
-
-type Result = Ok[_T] | Error[_E]
+from . import agent, auth, models, services, tools, utils  # noqa: E402, F401

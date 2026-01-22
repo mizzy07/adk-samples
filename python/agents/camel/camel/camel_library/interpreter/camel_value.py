@@ -154,14 +154,18 @@ class Value(Generic[_T], Protocol):
         return (
             CaMeLTrue(camel_capabilities.Capabilities.camel(), (self, value))
             if self.python_value == value.python_value
-            else CaMeLFalse(camel_capabilities.Capabilities.camel(), (self, value))
+            else CaMeLFalse(
+                camel_capabilities.Capabilities.camel(), (self, value)
+            )
         )
 
     def neq(self, value: "Value") -> "Value[bool]":
         return (
             CaMeLTrue(camel_capabilities.Capabilities.camel(), (self, value))
             if self.python_value != value.python_value
-            else CaMeLFalse(camel_capabilities.Capabilities.camel(), (self, value))
+            else CaMeLFalse(
+                camel_capabilities.Capabilities.camel(), (self, value)
+            )
         )
 
     def hash(self) -> "Value[int]":
@@ -194,145 +198,121 @@ _RT = TypeVar("_RT", bound=Value)
 
 @runtime_checkable
 class SupportsAdd(Generic[_RT], Protocol):
-
     def add(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsSub(Generic[_RT], Protocol):
-
     def sub(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsMult(Generic[_RT], Protocol):
-
     def mult(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsTrueDiv(Generic[_RT], Protocol):
-
     def truediv(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsFloorDiv(Generic[_RT], Protocol):
-
     def floor_div(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsMod(Generic[_RT], Protocol):
-
     def mod(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsPow(Generic[_RT], Protocol):
-
     def pow(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsLShift(Generic[_RT], Protocol):
-
     def l_shift(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRShift(Generic[_RT], Protocol):
-
     def r_shift(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsBitOr(Generic[_RT], Protocol):
-
     def bit_or(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsBitXor(Generic[_RT], Protocol):
-
     def bit_xor(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsBitAnd(Generic[_RT], Protocol):
-
     def bit_and(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRAdd(Generic[_RT], Protocol):
-
     def r_add(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRSub(Generic[_RT], Protocol):
-
     def r_sub(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRMult(Generic[_RT], Protocol):
-
     def r_mult(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRTrueDiv(Generic[_RT], Protocol):
-
     def r_truediv(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRFloorDiv(Generic[_RT], Protocol):
-
     def r_floor_div(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRMod(Generic[_RT], Protocol):
-
     def r_mod(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRPow(Generic[_RT], Protocol):
-
     def r_pow(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRLShift(Generic[_RT], Protocol):
-
     def r_l_shift(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRRShift(Generic[_RT], Protocol):
-
     def r_r_shift(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRBitOr(Generic[_RT], Protocol):
-
     def r_bit_or(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRBitXor(Generic[_RT], Protocol):
-
     def r_bit_xor(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
 @runtime_checkable
 class SupportsRBitAnd(Generic[_RT], Protocol):
-
     def r_bit_and(self, other: Value) -> _RT | types.NotImplementedType: ...
 
 
@@ -344,7 +324,6 @@ def is_value(obj: Any) -> bool:
 
 
 class PythonComparable(Protocol):
-
     def __lt__(self, other: Self, /) -> bool: ...
 
     def __gt__(self, other: Self, /) -> bool: ...
@@ -354,18 +333,20 @@ _CT = TypeVar("_CT", bound=PythonComparable)
 
 
 class TotallyOrdered(Value[_CT]):
-
     def cmp(self, y: Self) -> "CaMeLInt":
         if self.raw > y.raw:
-            return CaMeLInt(1, camel_capabilities.Capabilities.camel(), (self, y))
+            return CaMeLInt(
+                1, camel_capabilities.Capabilities.camel(), (self, y)
+            )
         if self.raw < y.raw:
-            return CaMeLInt(-1, camel_capabilities.Capabilities.camel(), (self, y))
+            return CaMeLInt(
+                -1, camel_capabilities.Capabilities.camel(), (self, y)
+            )
         return CaMeLInt(0, camel_capabilities.Capabilities.camel(), (self, y))
 
 
 @runtime_checkable
 class HasAttrs(Generic[_T], Value[_T], Protocol):
-
     def attr(self, name: str) -> Value | None: ...
 
     def attr_names(self) -> set[str]: ...
@@ -373,7 +354,6 @@ class HasAttrs(Generic[_T], Value[_T], Protocol):
 
 @runtime_checkable
 class HasSetField(Generic[_T], HasAttrs[_T], Protocol):
-
     def set_field(self, name: str, value: Value) -> "CaMeLNone": ...
 
 
@@ -407,7 +387,9 @@ class CaMeLCallable(Generic[_T], Value[Callable[..., _T]], Protocol):
 
     def string(self) -> "CaMeLStr":
         return self.name().add(
-            CaMeLStr.from_raw("()", camel_capabilities.Capabilities.camel(), (self,))
+            CaMeLStr.from_raw(
+                "()", camel_capabilities.Capabilities.camel(), (self,)
+            )
         )
 
     def wrap_output(
@@ -465,7 +447,9 @@ class CaMeLCallable(Generic[_T], Value[Callable[..., _T]], Protocol):
     def bind_recv(self, recv: Value):
         self._recv = recv
         # Bind also to the original python method
-        self._bound_python_value = types.MethodType(self.python_value, self._recv.raw)
+        self._bound_python_value = types.MethodType(
+            self.python_value, self._recv.raw
+        )
 
     def receiver(self) -> Value | None:
         return self._recv
@@ -477,7 +461,9 @@ class CaMeLCallable(Generic[_T], Value[Callable[..., _T]], Protocol):
     def _make_args_by_keyword(
         self, args: "CaMeLTuple", kwargs: "CaMeLDict[CaMeLStr, Value]"
     ) -> dict[str, Any]:
-        args_by_keyword = self.make_args_by_keyword_preserve_values(args, kwargs)
+        args_by_keyword = self.make_args_by_keyword_preserve_values(
+            args, kwargs
+        )
         return {k: v.raw for k, v in args_by_keyword.items()}
 
 
@@ -509,8 +495,12 @@ class CaMeLIterable(Generic[_IT, _V], Value[_IT]):
 
     def eq(self, value: "Value") -> "CaMeLBool":
         if not isinstance(value, type(self)):
-            return CaMeLFalse(camel_capabilities.Capabilities.camel(), (self, value))
-        for self_c, value_c in zip(self.python_value, value.python_value):
+            return CaMeLFalse(
+                camel_capabilities.Capabilities.camel(), (self, value)
+            )
+        for self_c, value_c in zip(
+            self.python_value, value.python_value, strict=True
+        ):
             if not self_c.eq(value_c).raw:
                 return CaMeLFalse(
                     camel_capabilities.Capabilities.camel(), (self, value)
@@ -521,10 +511,13 @@ class CaMeLIterable(Generic[_IT, _V], Value[_IT]):
         return iter(self.python_value)
 
     def contains(self, other: Value) -> "CaMeLBool":
-        inner_element = next((el for el in self.iterate_python() if el.eq(other)), None)
+        inner_element = next(
+            (el for el in self.iterate_python() if el.eq(other)), None
+        )
         if inner_element is not None:
             return CaMeLTrue(
-                camel_capabilities.Capabilities.camel(), (self, other, inner_element)
+                camel_capabilities.Capabilities.camel(),
+                (self, other, inner_element),
             )
         # Add capabilities from elements as well as False reveal something about all
         # of them (i.e., that none of them is `other`).
@@ -553,9 +546,9 @@ class CaMeLSequence(Generic[_ST, _V], CaMeLIterable[_ST, _V]):
     ) -> Self:
         s = slice(start.raw, end.raw, step.raw)
         newpython_value: _ST = self.python_value[s]  # type: ignore  # can't specify CT[T] bc Python does not support higher-kinded types
-        return self.new_with_python_value(newpython_value).new_with_dependencies(
-            (self, start, end, step)
-        )
+        return self.new_with_python_value(
+            newpython_value
+        ).new_with_dependencies((self, start, end, step))
 
     def len(self) -> "CaMeLInt":
         return CaMeLInt(
@@ -614,23 +607,31 @@ class CaMeLMapping(Generic[_MT, _KV, _VV], Value[_MT]):
             return dependencies, visited_objects
         visited_objects |= {id(self)}
         for k, v in self.python_value.items():
-            k_dependencies, k_visited_objects = k.get_dependencies(visited_objects)
-            v_dependencies, v_visited_objects = v.get_dependencies(k_visited_objects)
+            k_dependencies, k_visited_objects = k.get_dependencies(
+                visited_objects
+            )
+            v_dependencies, v_visited_objects = v.get_dependencies(
+                k_visited_objects
+            )
             dependencies += k_dependencies + v_dependencies
             visited_objects = v_visited_objects
         return dependencies, visited_objects
 
     def get(self, key: _KV) -> _VV:
-        dict_key = next((el for el in self.iterate_python() if el.eq(key)), None)
+        dict_key = next(
+            (el for el in self.iterate_python() if el.eq(key)), None
+        )
         if dict_key is None:
             raise KeyError(key)
         return self.python_value[dict_key].new_with_dependencies((self, key))
 
     def eq(self, value: "Value") -> "CaMeLBool":
         if not isinstance(value, type(self)):
-            return CaMeLFalse(camel_capabilities.Capabilities.camel(), (self, value))
+            return CaMeLFalse(
+                camel_capabilities.Capabilities.camel(), (self, value)
+            )
         for (self_k, self_v), (value_k, value_v) in zip(
-            self.python_value.items(), value.python_value.items()
+            self.python_value.items(), value.python_value.items(), strict=True
         ):
             if not self_k.eq(value_k).raw:
                 return CaMeLFalse(
@@ -646,7 +647,9 @@ class CaMeLMapping(Generic[_MT, _KV, _VV], Value[_MT]):
         items = []
         for k, v in self.python_value.items():
             items.append(
-                CaMeLTuple((k, v), camel_capabilities.Capabilities.camel(), (self,))
+                CaMeLTuple(
+                    (k, v), camel_capabilities.Capabilities.camel(), (self,)
+                )
             )
         return CaMeLList(items, self._capabilities, (self,))
 
@@ -670,7 +673,9 @@ class CaMeLMapping(Generic[_MT, _KV, _VV], Value[_MT]):
             A CaMeLBool indicating whether the mapping contains the value.
         """
         dependencies = [self, other]
-        inner_element = next((el for el in self.iterate_python() if el.eq(other)), None)
+        inner_element = next(
+            (el for el in self.iterate_python() if el.eq(other)), None
+        )
         if inner_element is not None:
             return CaMeLTrue(
                 camel_capabilities.Capabilities.camel(),
@@ -688,7 +693,9 @@ class CaMeLMapping(Generic[_MT, _KV, _VV], Value[_MT]):
 _MMT = TypeVar("_MMT", bound=MutableMapping)
 
 
-class CaMeLMutableMapping(Generic[_MMT, _KV, _VV], CaMeLMapping[_MMT, _KV, _VV]):
+class CaMeLMutableMapping(
+    Generic[_MMT, _KV, _VV], CaMeLMapping[_MMT, _KV, _VV]
+):
     """Represents a mutable mapping value in CaMeL."""
 
     python_value: _MMT
@@ -703,7 +710,9 @@ class CaMeLMutableMapping(Generic[_MMT, _KV, _VV], CaMeLMapping[_MMT, _KV, _VV])
         Returns:
             A CaMeLNone indicating the operation completed.
         """
-        dict_key = next((el for el in self.iterate_python() if el.eq(key).raw), None)
+        dict_key = next(
+            (el for el in self.iterate_python() if el.eq(key).raw), None
+        )
         if dict_key is None:
             dict_key = key
         if key is not dict_key:
@@ -753,11 +762,11 @@ class _Bool(TotallyOrdered[bool]):
         return CaMeLNone(camel_capabilities.Capabilities.camel(), (self,))
 
 
-class CaMeLTrue(_Bool):  # noqa: N801
+class CaMeLTrue(_Bool):
     python_value = True
 
 
-class CaMeLFalse(_Bool):  # noqa: N801
+class CaMeLFalse(_Bool):
     python_value = False
 
 
@@ -766,7 +775,6 @@ CaMeLBool = CaMeLTrue | CaMeLFalse
 
 @runtime_checkable
 class HasUnary(Protocol):
-
     def unary(self, op: ast.unaryop) -> Self | types.NotImplementedType: ...
 
 
@@ -866,7 +874,9 @@ class CaMeLFloat(
             (self, other),
         )
 
-    def r_truediv(self, other: Value) -> "CaMeLFloat | types.NotImplementedType":
+    def r_truediv(
+        self, other: Value
+    ) -> "CaMeLFloat | types.NotImplementedType":
         if not isinstance(other, CaMeLFloat | CaMeLInt):
             return NotImplemented
         return CaMeLFloat(
@@ -875,7 +885,9 @@ class CaMeLFloat(
             (self, other),
         )
 
-    def floor_div(self, other: Value) -> "CaMeLFloat | types.NotImplementedType":
+    def floor_div(
+        self, other: Value
+    ) -> "CaMeLFloat | types.NotImplementedType":
         if not isinstance(other, CaMeLFloat | CaMeLInt):
             return NotImplemented
         return CaMeLFloat(
@@ -884,7 +896,9 @@ class CaMeLFloat(
             (self, other),
         )
 
-    def r_floor_div(self, other: Value) -> "CaMeLFloat | types.NotImplementedType":
+    def r_floor_div(
+        self, other: Value
+    ) -> "CaMeLFloat | types.NotImplementedType":
         if not isinstance(other, CaMeLFloat | CaMeLInt):
             return NotImplemented
         return CaMeLFloat(
@@ -1303,7 +1317,7 @@ class CaMeLList(
 
     @property
     def raw(self) -> list[Any]:
-        return list(v.raw for v in self.python_value)
+        return [v.raw for v in self.python_value]
 
     def attr(self, name) -> Value | None:
         attr = SUPPORTED_BUILT_IN_METHODS[self.raw_type].get(name)
@@ -1318,7 +1332,8 @@ class CaMeLList(
         _ = [el.freeze() for el in self.python_value]
         self._frozen = True
         return CaMeLNone(
-            camel_capabilities.Capabilities.camel(), (self, *self.iterate_python())
+            camel_capabilities.Capabilities.camel(),
+            (self, *self.iterate_python()),
         )
 
     def add(self, other: Value) -> "CaMeLList | types.NotImplementedType":
@@ -1365,13 +1380,14 @@ class CaMeLSet(
 
     @property
     def raw(self) -> set[Any]:
-        return set(v.raw for v in self.python_value)
+        return {v.raw for v in self.python_value}
 
     def freeze(self) -> "CaMeLNone":
         _ = [el.freeze() for el in self.python_value]
         self._frozen = True
         return CaMeLNone(
-            camel_capabilities.Capabilities.camel(), (self, *self.iterate_python())
+            camel_capabilities.Capabilities.camel(),
+            (self, *self.iterate_python()),
         )
 
     def sub(self, other: Value) -> "CaMeLSet | types.NotImplementedType":
@@ -1637,9 +1653,13 @@ class CaMeLClassInstance(Generic[_T], HasSetField[_T]):
 
     def _cmp(self, y: Self) -> "CaMeLInt":
         if self.raw > y.raw:  # type: ignore  # this is hardcoded
-            return CaMeLInt(1, camel_capabilities.Capabilities.camel(), (self, y))
+            return CaMeLInt(
+                1, camel_capabilities.Capabilities.camel(), (self, y)
+            )
         if self.raw < y.raw:  # type: ignore  # this is hardcoded
-            return CaMeLInt(-1, camel_capabilities.Capabilities.camel(), (self, y))
+            return CaMeLInt(
+                -1, camel_capabilities.Capabilities.camel(), (self, y)
+            )
         return CaMeLInt(0, camel_capabilities.Capabilities.camel(), (self, y))
 
     def __eq__(self, other) -> bool:
@@ -1683,12 +1703,17 @@ class CaMeLClassInstance(Generic[_T], HasSetField[_T]):
         attr = getattr(self.python_value, name)
         if not isinstance(attr, Value):
             return value_from_raw(
-                attr, camel_capabilities.Capabilities.camel(), self._namespace, ()
+                attr,
+                camel_capabilities.Capabilities.camel(),
+                self._namespace,
+                (),
             )
         return attr.new_with_dependencies((self,))
 
     def attr_names(self) -> set[str]:
-        return self._camel_class.attr_names() | _get_class_attr_names(self.python_value)
+        return self._camel_class.attr_names() | _get_class_attr_names(
+            self.python_value
+        )
 
 
 class ValueAsWrapper(Generic[_T], CaMeLClassInstance[_T]):
@@ -1801,7 +1826,10 @@ def value_from_raw(
             return CaMeLList(
                 [
                     value_from_raw(
-                        val, camel_capabilities.Capabilities.camel(), namespace, ()
+                        val,
+                        camel_capabilities.Capabilities.camel(),
+                        namespace,
+                        (),
                     )
                     for val in raw_value
                 ],
@@ -1812,7 +1840,10 @@ def value_from_raw(
             return CaMeLDict(
                 {
                     value_from_raw(
-                        k, camel_capabilities.Capabilities.camel(), namespace, ()
+                        k,
+                        camel_capabilities.Capabilities.camel(),
+                        namespace,
+                        (),
                     ): value_from_raw(v, capabilities, namespace, ())
                     for k, v in raw_value.items()
                 },
@@ -1823,7 +1854,10 @@ def value_from_raw(
             return CaMeLSet(
                 {
                     value_from_raw(
-                        val, camel_capabilities.Capabilities.camel(), namespace, ()
+                        val,
+                        camel_capabilities.Capabilities.camel(),
+                        namespace,
+                        (),
                     )
                     for val in raw_value
                 },
@@ -1834,7 +1868,10 @@ def value_from_raw(
             return CaMeLTuple(
                 tuple(
                     value_from_raw(
-                        val, camel_capabilities.Capabilities.camel(), namespace, ()
+                        val,
+                        camel_capabilities.Capabilities.camel(),
+                        namespace,
+                        (),
                     )
                     for val in raw_value
                 ),
@@ -1872,11 +1909,17 @@ def value_from_raw(
                         raw_value, capabilities, namespace, dependencies
                     )
             return CaMeLClassInstance(
-                raw_value_copy, value_class, capabilities, namespace, dependencies
+                raw_value_copy,
+                value_class,
+                capabilities,
+                namespace,
+                dependencies,
             )
         case _:
             # Value of unknown class, raise exception
-            raise UndefinedClassError(f"Undefined class {type(raw_value).__name__}")
+            raise UndefinedClassError(
+                f"Undefined class {type(raw_value).__name__}"
+            )
 
 
 class CaMeLBuiltin(Generic[_T], CaMeLCallable[_T]):

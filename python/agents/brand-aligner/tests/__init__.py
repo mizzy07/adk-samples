@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,27 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""Module containing definitions for the result type.
-
-It works like Rust's Result type.
-"""
-
-import dataclasses
-from typing import Generic, TypeVar
-
-_T = TypeVar("_T")
-_E = TypeVar("_E")
-
-
-@dataclasses.dataclass(frozen=True)
-class Ok(Generic[_T]):
-    value: _T
-
-
-@dataclasses.dataclass(frozen=True)
-class Error(Generic[_E]):
-    error: _E
-
-
-type Result = Ok[_T] | Error[_E]

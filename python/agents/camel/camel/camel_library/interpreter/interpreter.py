@@ -25,7 +25,7 @@ import dataclasses
 import enum
 import re
 from collections.abc import Callable, Iterable, Mapping, Sequence
-from typing import Any, Generic, NamedTuple, TypeAlias, TypeVar
+from typing import Any, Generic, NamedTuple, TypeVar
 
 import pydantic
 import pydantic.fields
@@ -35,7 +35,7 @@ from ..capabilities import capabilities as camel_capabilities
 from ..capabilities import readers, sources
 from . import camel_value, library
 
-ExceptionASTNodes: TypeAlias = ast.expr | ast.stmt | ast.excepthandler
+type ExceptionASTNodes = ast.expr | ast.stmt | ast.excepthandler
 
 _E = TypeVar("_E", bound=Exception)
 
@@ -76,7 +76,7 @@ CaMeLException(
 )"""
 
 
-CaMeLResult: TypeAlias = (
+type CaMeLResult = (
     result.Ok[camel_value.Value[Any]] | result.Error[CaMeLException[Exception]]
 )
 
@@ -170,8 +170,14 @@ def _eval_formatted_value(
             raise ValueError("Invalid eval result type")
 
     if node.format_spec is not None:
-        evaled_format_spec, namespace, tool_calls_chain, dependencies = camel_eval(
-            node.format_spec, namespace, tool_calls_chain, dependencies, eval_args
+        evaled_format_spec, namespace, tool_calls_chain, dependencies = (
+            camel_eval(
+                node.format_spec,
+                namespace,
+                tool_calls_chain,
+                dependencies,
+                eval_args,
+            )
         )
         if isinstance(evaled_format_spec, result.Error):
             return EvalResult(
@@ -189,19 +195,29 @@ def _eval_formatted_value(
         match node.conversion:
             # No formatting
             case -1:
-                formatted_evaled_data = f"{str_val:{evaled_format_spec.raw or ''}}"
+                formatted_evaled_data = (
+                    f"{str_val:{evaled_format_spec.raw or ''}}"
+                )
             # !s formatting
             case 115:
-                formatted_evaled_data = f"{str_val!s:{evaled_format_spec.raw or ''}}"
+                formatted_evaled_data = (
+                    f"{str_val!s:{evaled_format_spec.raw or ''}}"
+                )
             # !r formatting
             case 114:
-                formatted_evaled_data = f"{str_val!r:{evaled_format_spec.raw or ''}}"
+                formatted_evaled_data = (
+                    f"{str_val!r:{evaled_format_spec.raw or ''}}"
+                )
             # !a formatting
             case 97:
-                formatted_evaled_data = f"{str_val!a:{evaled_format_spec.raw or ''}}"
+                formatted_evaled_data = (
+                    f"{str_val!a:{evaled_format_spec.raw or ''}}"
+                )
             case _:
                 return EvalResult(
-                    _make_not_implemented_error(node, "Invalid conversion specifier."),
+                    _make_not_implemented_error(
+                        node, "Invalid conversion specifier."
+                    ),
                     namespace,
                     tool_calls_chain,
                     dependencies,
@@ -248,8 +264,10 @@ def _eval_starred_iterable(
     Returns:
         The result of the evaluation.
     """
-    evaled_starred_value_res, namespace, tool_calls_chain, dependencies = camel_eval(
-        node.value, namespace, tool_calls_chain, dependencies, eval_args
+    evaled_starred_value_res, namespace, tool_calls_chain, dependencies = (
+        camel_eval(
+            node.value, namespace, tool_calls_chain, dependencies, eval_args
+        )
     )
     match evaled_starred_value_res:
         case result.Error():
@@ -264,12 +282,15 @@ def _eval_starred_iterable(
         case _:
             raise ValueError("Invalid eval result type")
     if not isinstance(
-        evaled_starred_value, camel_value.CaMeLIterable | camel_value.CaMeLMapping
+        evaled_starred_value,
+        camel_value.CaMeLIterable | camel_value.CaMeLMapping,
     ):
         return EvalResult(
             result.Error(
                 CaMeLException(
-                    TypeError(f"Value after * must be an iterable, not {v.raw_type}"),
+                    TypeError(
+                        f"Value after * must be an iterable, not {v.raw_type}"
+                    ),
                     (node,),
                     (v,),
                 )
@@ -279,7 +300,10 @@ def _eval_starred_iterable(
             dependencies,
         )
     return EvalResult(
-        result.Ok(evaled_starred_value), namespace, tool_calls_chain, dependencies
+        result.Ok(evaled_starred_value),
+        namespace,
+        tool_calls_chain,
+        dependencies,
     )
 
 
@@ -327,8 +351,10 @@ def _eval_iterable(
                 case _:
                     raise ValueError("Invalid eval result type")
         else:
-            evaled_elt_res, namespace, tool_calls_chain, dependencies = camel_eval(
-                elt, namespace, tool_calls_chain, dependencies, eval_args
+            evaled_elt_res, namespace, tool_calls_chain, dependencies = (
+                camel_eval(
+                    elt, namespace, tool_calls_chain, dependencies, eval_args
+                )
             )
             match evaled_elt_res:
                 case result.Error():
@@ -375,8 +401,10 @@ def _eval_joined_str(
     Returns:
         The result of the evaluation.
     """
-    evaled_iterable_res, namespace, tool_calls_chain, dependencies = _eval_iterable(
-        node.values, namespace, tool_calls_chain, dependencies, eval_args
+    evaled_iterable_res, namespace, tool_calls_chain, dependencies = (
+        _eval_iterable(
+            node.values, namespace, tool_calls_chain, dependencies, eval_args
+        )
     )
     match evaled_iterable_res:
         case result.Error():
@@ -399,7 +427,9 @@ def _eval_joined_str(
         string.python_value = (*string.python_value, *d.string().python_value)
         # string = string.new_with_dependencies((d,))
 
-    return EvalResult(result.Ok(string), namespace, tool_calls_chain, dependencies)
+    return EvalResult(
+        result.Ok(string), namespace, tool_calls_chain, dependencies
+    )
 
 
 def _eval_constant(
@@ -557,7 +587,9 @@ def _eval_attribute_load(
             raise ValueError("Invalid eval result type")
     attr_error = result.Error(
         CaMeLException(
-            AttributeError(f"'{obj.raw_type}' object has no attribute '{node.attr}'"),
+            AttributeError(
+                f"'{obj.raw_type}' object has no attribute '{node.attr}'"
+            ),
             (node,),
             (),
         )
@@ -586,7 +618,9 @@ def _eval_attribute_load(
         # in-place
         attr.bind_recv(obj)
 
-    return EvalResult(result.Ok(attr), namespace, tool_calls_chain, dependencies)
+    return EvalResult(
+        result.Ok(attr), namespace, tool_calls_chain, dependencies
+    )
 
 
 def _eval_subscript_load(
@@ -695,7 +729,9 @@ def _eval_subscript_load(
                     dependencies,
                 )
         case _:
-            return EvalResult(type_error, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                type_error, namespace, tool_calls_chain, dependencies
+            )
 
 
 def _eval_list(
@@ -717,8 +753,10 @@ def _eval_list(
     Returns:
         The result of the evaluation.
     """
-    evaled_iterable_res, namespace, tool_calls_chain, dependencies = _eval_iterable(
-        node.elts, namespace, tool_calls_chain, dependencies, eval_args
+    evaled_iterable_res, namespace, tool_calls_chain, dependencies = (
+        _eval_iterable(
+            node.elts, namespace, tool_calls_chain, dependencies, eval_args
+        )
     )
     match evaled_iterable_res:
         case result.Error():
@@ -766,8 +804,10 @@ def _eval_tuple(
     Returns:
         The result of the evaluation.
     """
-    evaled_iterable_res, namespace, tool_calls_chain, dependencies = _eval_iterable(
-        node.elts, namespace, tool_calls_chain, dependencies, eval_args
+    evaled_iterable_res, namespace, tool_calls_chain, dependencies = (
+        _eval_iterable(
+            node.elts, namespace, tool_calls_chain, dependencies, eval_args
+        )
     )
     match evaled_iterable_res:
         case result.Error():
@@ -815,8 +855,10 @@ def _eval_set(
     Returns:
         The result of the evaluation.
     """
-    evaled_iterable_res, namespace, tool_calls_chain, dependencies = _eval_iterable(
-        node.elts, namespace, tool_calls_chain, dependencies, eval_args
+    evaled_iterable_res, namespace, tool_calls_chain, dependencies = (
+        _eval_iterable(
+            node.elts, namespace, tool_calls_chain, dependencies, eval_args
+        )
     )
     match evaled_iterable_res:
         case result.Error():
@@ -838,7 +880,10 @@ def _eval_set(
     )
 
     return EvalResult(
-        result.Ok(elts_evaled_data_set), namespace, tool_calls_chain, dependencies
+        result.Ok(elts_evaled_data_set),
+        namespace,
+        tool_calls_chain,
+        dependencies,
     )
 
 
@@ -864,10 +909,12 @@ def _eval_dict(
     result_dict = camel_value.CaMeLDict(
         {}, camel_capabilities.Capabilities.default(), ()
     )
-    for key, val in zip(node.keys, node.values):
+    for key, val in zip(node.keys, node.values, strict=True):
         if key is not None:
-            evaled_key_res, namespace, tool_calls_chain, dependencies = camel_eval(
-                key, namespace, tool_calls_chain, dependencies, eval_args
+            evaled_key_res, namespace, tool_calls_chain, dependencies = (
+                camel_eval(
+                    key, namespace, tool_calls_chain, dependencies, eval_args
+                )
             )
             match evaled_key_res:
                 case result.Error():
@@ -881,8 +928,10 @@ def _eval_dict(
                     key_evaled_data = v
                 case _:
                     raise ValueError("Invalid eval result type")
-            evaled_value_res, namespace, tool_calls_chain, dependencies = camel_eval(
-                val, namespace, tool_calls_chain, dependencies, eval_args
+            evaled_value_res, namespace, tool_calls_chain, dependencies = (
+                camel_eval(
+                    val, namespace, tool_calls_chain, dependencies, eval_args
+                )
             )
             match evaled_value_res:
                 case result.Error():
@@ -901,8 +950,10 @@ def _eval_dict(
             # If key is None, it means that it's a dictionary being expanded, i.e.
             # {..., **d}
             # https://greentreesnakes.readthedocs.io/en/latest/nodes.html#Dict
-            evaled_key_res, namespace, tool_calls_chain, dependencies = camel_eval(
-                val, namespace, tool_calls_chain, dependencies, eval_args
+            evaled_key_res, namespace, tool_calls_chain, dependencies = (
+                camel_eval(
+                    val, namespace, tool_calls_chain, dependencies, eval_args
+                )
             )
             match evaled_key_res:
                 case result.Error():
@@ -920,7 +971,9 @@ def _eval_dict(
                 return EvalResult(
                     result.Error(
                         CaMeLException(
-                            TypeError(f"'{inner_dict.raw_type}' is not a mapping."),
+                            TypeError(
+                                f"'{inner_dict.raw_type}' is not a mapping."
+                            ),
                             (node,),
                             (),
                         )
@@ -931,9 +984,13 @@ def _eval_dict(
                 )
             result_dict = result_dict.new_with_python_value(
                 result_dict.python_value | inner_dict.python_value
-            ).new_with_dependencies((*result_dict.outer_dependencies, inner_dict))
+            ).new_with_dependencies(
+                (*result_dict.outer_dependencies, inner_dict)
+            )
 
-    return EvalResult(result.Ok(result_dict), namespace, tool_calls_chain, dependencies)
+    return EvalResult(
+        result.Ok(result_dict), namespace, tool_calls_chain, dependencies
+    )
 
 
 def _assign_name(
@@ -968,7 +1025,9 @@ def _assign_name(
         return EvalResult(
             result.Error(
                 CaMeLException(
-                    SyntaxError(f"cannot reassign built-in {name.id}"), (name,), ()
+                    SyntaxError(f"cannot reassign built-in {name.id}"),
+                    (name,),
+                    (),
                 )
             ),
             namespace,
@@ -979,7 +1038,9 @@ def _assign_name(
     updated_variables = namespace.variables | {name.id: v}
     new_namespace = dataclasses.replace(namespace, variables=updated_variables)
     return EvalResult(
-        result.Ok(camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())),
+        result.Ok(
+            camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())
+        ),
         new_namespace,
         tool_calls_chain,
         dependencies,
@@ -1011,7 +1072,9 @@ def _assign_tuple_list(
         return EvalResult(
             result.Error(
                 CaMeLException(
-                    TypeError(f"cannot unpack non-iterable {v.raw_type} object"),
+                    TypeError(
+                        f"cannot unpack non-iterable {v.raw_type} object"
+                    ),
                     (names,),
                     (v,),
                 )
@@ -1020,7 +1083,9 @@ def _assign_tuple_list(
             tool_calls_chain,
             dependencies,
         )
-    starred_names = [name for name in names.elts if isinstance(name, ast.Starred)]
+    starred_names = [
+        name for name in names.elts if isinstance(name, ast.Starred)
+    ]
     if starred_names:
         # TODO(edebenedetti): support this in the future?
         return EvalResult(
@@ -1052,14 +1117,18 @@ def _assign_tuple_list(
             tool_calls_chain,
             dependencies,
         )
-    for name, v in zip(names.elts, data_to_assign):
+    for name, value in zip(names.elts, data_to_assign, strict=True):
         assign_res, namespace, tool_calls_chain, dependencies = _assign(
-            v, name, namespace, tool_calls_chain, dependencies, eval_args
+            value, name, namespace, tool_calls_chain, dependencies, eval_args
         )
         if isinstance(assign_res, result.Error):
-            return EvalResult(assign_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                assign_res, namespace, tool_calls_chain, dependencies
+            )
     return EvalResult(
-        result.Ok(camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())),
+        result.Ok(
+            camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())
+        ),
         namespace,
         tool_calls_chain,
         dependencies,
@@ -1112,7 +1181,9 @@ def _assign_attribute(
     attr_name = attribute.attr
     attr_error = result.Error(
         CaMeLException(
-            AttributeError(f"'{v.raw_type}' object has no attribute '{attr_name}'"),
+            AttributeError(
+                f"'{v.raw_type}' object has no attribute '{attr_name}'"
+            ),
             (attribute,),
             (obj,),
         )
@@ -1211,8 +1282,14 @@ def _assign_subscript(
                 dependencies,
             )
         case _:
-            evaled_index_res, namespace, tool_calls_chain, dependencies = camel_eval(
-                subscript.slice, namespace, tool_calls_chain, dependencies, eval_args
+            evaled_index_res, namespace, tool_calls_chain, dependencies = (
+                camel_eval(
+                    subscript.slice,
+                    namespace,
+                    tool_calls_chain,
+                    dependencies,
+                    eval_args,
+                )
             )
             match evaled_index_res:
                 case result.Error():
@@ -1239,7 +1316,9 @@ def _assign_subscript(
                 sequence.set_key(index, val)
 
     return EvalResult(
-        result.Ok(camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())),
+        result.Ok(
+            camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())
+        ),
         namespace,
         tool_calls_chain,
         dependencies,
@@ -1340,8 +1419,10 @@ def _eval_assign(
     Returns:
         The result of the evaluation.
     """
-    evaled_value_res, new_namespace, tool_calls_chain, dependencies = camel_eval(
-        node.value, namespace, tool_calls_chain, dependencies, eval_args
+    evaled_value_res, new_namespace, tool_calls_chain, dependencies = (
+        camel_eval(
+            node.value, namespace, tool_calls_chain, dependencies, eval_args
+        )
     )
     match evaled_value_res:
         case result.Error():
@@ -1366,7 +1447,9 @@ def _eval_assign(
             eval_args,
         )
         if isinstance(assign_res, result.Error):
-            return EvalResult(assign_res, new_namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                assign_res, new_namespace, tool_calls_chain, dependencies
+            )
 
     return EvalResult(
         result.Ok(evaled_value), new_namespace, tool_calls_chain, dependencies
@@ -1395,7 +1478,9 @@ def _eval_ann_assign(
     if node.value is None:
         return EvalResult(
             result.Ok(
-                camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())
+                camel_value.CaMeLNone(
+                    camel_capabilities.Capabilities.default(), ()
+                )
             ),
             namespace,
             tool_calls_chain,
@@ -1423,7 +1508,9 @@ def _eval_ann_assign(
         eval_args,
     )
     if isinstance(assign_res, result.Error):
-        return EvalResult(assign_res, new_namespace, tool_calls_chain, dependencies)
+        return EvalResult(
+            assign_res, new_namespace, tool_calls_chain, dependencies
+        )
     return EvalResult(
         result.Ok(evaled_value), new_namespace, tool_calls_chain, dependencies
     )
@@ -1448,8 +1535,10 @@ def _eval_aug_assign(
     Returns:
         The result of the evaluation.
     """
-    evaled_target_res, new_namespace, tool_calls_chain, dependencies = camel_eval(
-        node.target, namespace, tool_calls_chain, dependencies, eval_args
+    evaled_target_res, new_namespace, tool_calls_chain, dependencies = (
+        camel_eval(
+            node.target, namespace, tool_calls_chain, dependencies, eval_args
+        )
     )
     match evaled_target_res:
         case result.Error():
@@ -1464,8 +1553,10 @@ def _eval_aug_assign(
         case _:
             raise ValueError("Invalid eval result type")
 
-    evaled_value_res, new_namespace, tool_calls_chain, dependencies = camel_eval(
-        node.value, namespace, tool_calls_chain, dependencies, eval_args
+    evaled_value_res, new_namespace, tool_calls_chain, dependencies = (
+        camel_eval(
+            node.value, namespace, tool_calls_chain, dependencies, eval_args
+        )
     )
     match evaled_value_res:
         case result.Error():
@@ -1480,7 +1571,9 @@ def _eval_aug_assign(
         case _:
             raise ValueError("Invalid eval result type")
 
-    op_result_res = _eval_bin_op_inner(node, evaled_target, evaled_value, namespace)
+    op_result_res = _eval_bin_op_inner(
+        node, evaled_target, evaled_value, namespace
+    )
     match op_result_res:
         case result.Error():
             return EvalResult(
@@ -1533,7 +1626,9 @@ def _restore_or_delete_variables(
     restored_variables = {}
     for var_name in comprehension_variables:
         if var_name in original_namespace.variables:
-            restored_variables[var_name] = original_namespace.variables[var_name]
+            restored_variables[var_name] = original_namespace.variables[
+                var_name
+            ]
         else:
             del updated_namespace.variables[var_name]
     updated_namespace = dataclasses.replace(
@@ -1545,9 +1640,7 @@ def _restore_or_delete_variables(
 
 def _eval_comprehensions(
     generators: list[ast.comprehension],
-    elts: (
-        tuple[ast.expr] | tuple[ast.expr, ast.expr]
-    ),  # pylint: disable=g-one-element-tuple
+    elts: (tuple[ast.expr] | tuple[ast.expr, ast.expr]),  # pylint: disable=g-one-element-tuple
     namespace: camel_value.Namespace,
     tool_calls_chain: Sequence[function_types.FunctionCall[Any]],
     dependencies: Iterable[camel_value.Value[Any]],
@@ -1577,12 +1670,16 @@ def _eval_comprehensions(
             )
             if isinstance(elt_res, result.Error):
                 return (
-                    EvalResult(elt_res, namespace, tool_calls_chain, dependencies),
+                    EvalResult(
+                        elt_res, namespace, tool_calls_chain, dependencies
+                    ),
                     (),
                 )
             elts_results.append(
                 camel_value.CaMeLList(
-                    [elt_res.value], camel_capabilities.Capabilities.default(), ()
+                    [elt_res.value],
+                    camel_capabilities.Capabilities.default(),
+                    (),
                 )
             )
 
@@ -1590,7 +1687,9 @@ def _eval_comprehensions(
             EvalResult(
                 result.Ok(
                     camel_value.CaMeLTuple(
-                        elts_results, camel_capabilities.Capabilities.default(), ()
+                        elts_results,
+                        camel_capabilities.Capabilities.default(),
+                        (),
                     )
                 ),
                 namespace,
@@ -1615,12 +1714,16 @@ def _eval_comprehensions(
         )
 
     iterable = iterable_res.value
-    if not isinstance(iterable, camel_value.CaMeLIterable | camel_value.CaMeLMapping):
+    if not isinstance(
+        iterable, camel_value.CaMeLIterable | camel_value.CaMeLMapping
+    ):
         return (
             EvalResult(
                 result.Error(
                     CaMeLException(
-                        TypeError(f"'{iterable.raw_type}' object is not iterable"),
+                        TypeError(
+                            f"'{iterable.raw_type}' object is not iterable"
+                        ),
                         (
                             current_comprehension.iter,
                         ),  # Use the iter node for error reporting
@@ -1650,18 +1753,28 @@ def _eval_comprehensions(
         )
         if isinstance(assign_res, result.Error):
             return (
-                EvalResult(assign_res, namespace, tool_calls_chain, dependencies),
+                EvalResult(
+                    assign_res, namespace, tool_calls_chain, dependencies
+                ),
                 (),
             )
 
         # evaluate ifs
         all_ifs_true = True
         for if_expr in current_comprehension.ifs:
-            if_res, inner_namespace, tool_calls_chain, dependencies = camel_eval(
-                if_expr, inner_namespace, tool_calls_chain, dependencies, eval_args
+            if_res, inner_namespace, tool_calls_chain, dependencies = (
+                camel_eval(
+                    if_expr,
+                    inner_namespace,
+                    tool_calls_chain,
+                    dependencies,
+                    eval_args,
+                )
             )
             if isinstance(if_res, result.Error):
-                return EvalResult(if_res, namespace, tool_calls_chain, dependencies), ()
+                return EvalResult(
+                    if_res, namespace, tool_calls_chain, dependencies
+                ), ()
             if not if_res.value.truth().raw:
                 all_ifs_true = False
                 break
@@ -1669,11 +1782,14 @@ def _eval_comprehensions(
             continue
 
         (
-            recursive_res,
-            resulting_namespace,
-            tool_calls_chain,
-            dependencies,
-        ), evaled_iterators = _eval_comprehensions(
+            (
+                recursive_res,
+                resulting_namespace,
+                tool_calls_chain,
+                dependencies,
+            ),
+            evaled_iterators,
+        ) = _eval_comprehensions(
             generators[1:],
             elts,
             inner_namespace,
@@ -1691,19 +1807,23 @@ def _eval_comprehensions(
 
         if isinstance(recursive_res, result.Error):
             return (
-                EvalResult(recursive_res, namespace, tool_calls_chain, dependencies),
+                EvalResult(
+                    recursive_res, namespace, tool_calls_chain, dependencies
+                ),
                 (),
             )
 
         for acc_res, rec_res in zip(
-            accumulated_results, recursive_res.value.python_value
+            accumulated_results, recursive_res.value.python_value, strict=True
         ):
             acc_res.python_value.extend(rec_res.python_value)
 
     return EvalResult(
         result.Ok(
             camel_value.CaMeLTuple(
-                accumulated_results, camel_capabilities.Capabilities.default(), ()
+                accumulated_results,
+                camel_capabilities.Capabilities.default(),
+                (),
             )
         ),
         namespace,  # Return original namespace, not inner_namespace
@@ -1732,11 +1852,14 @@ def _eval_list_comp(
         The result of the evaluation.
     """
     (
-        evaled_comprehension_res,
-        namespace,
-        tool_calls_chain,
-        dependencies,
-    ), evaled_iterators = _eval_comprehensions(
+        (
+            evaled_comprehension_res,
+            namespace,
+            tool_calls_chain,
+            dependencies,
+        ),
+        evaled_iterators,
+    ) = _eval_comprehensions(
         node.generators,
         (node.elt,),
         namespace,
@@ -1760,7 +1883,9 @@ def _eval_list_comp(
 
     return EvalResult(
         result.Ok(
-            evaled_comprehension.python_value[0].new_with_dependencies(evaled_iterators)
+            evaled_comprehension.python_value[0].new_with_dependencies(
+                evaled_iterators
+            )
         ),
         namespace,
         tool_calls_chain,
@@ -1788,11 +1913,14 @@ def _eval_set_comp(
         The result of the evaluation.
     """
     (
-        evaled_comprehension_res,
-        namespace,
-        tool_calls_chain,
-        dependencies,
-    ), evaled_iterators = _eval_comprehensions(
+        (
+            evaled_comprehension_res,
+            namespace,
+            tool_calls_chain,
+            dependencies,
+        ),
+        evaled_iterators,
+    ) = _eval_comprehensions(
         node.generators,
         (node.elt,),
         namespace,
@@ -1820,7 +1948,9 @@ def _eval_set_comp(
         evaled_iterators,
     )
 
-    return EvalResult(result.Ok(elements), namespace, tool_calls_chain, dependencies)
+    return EvalResult(
+        result.Ok(elements), namespace, tool_calls_chain, dependencies
+    )
 
 
 def _eval_dict_comp(
@@ -1843,11 +1973,14 @@ def _eval_dict_comp(
         The result of the evaluation.
     """
     (
-        evaled_comprehension_res,
-        namespace,
-        tool_calls_chain,
-        dependencies,
-    ), evaled_iterators = _eval_comprehensions(
+        (
+            evaled_comprehension_res,
+            namespace,
+            tool_calls_chain,
+            dependencies,
+        ),
+        evaled_iterators,
+    ) = _eval_comprehensions(
         node.generators,
         (node.key, node.value),
         namespace,
@@ -1871,12 +2004,14 @@ def _eval_dict_comp(
 
     keys, values = evaled_comprehension.iterate_python()
     elements = camel_value.CaMeLDict(
-        dict(zip(keys.iterate_python(), values.iterate_python())),
+        dict(zip(keys.iterate_python(), values.iterate_python(), strict=True)),
         camel_capabilities.Capabilities.camel(),
         evaled_iterators,
     )
 
-    return EvalResult(result.Ok(elements), namespace, tool_calls_chain, dependencies)
+    return EvalResult(
+        result.Ok(elements), namespace, tool_calls_chain, dependencies
+    )
 
 
 def _eval_expr(
@@ -1898,7 +2033,9 @@ def _eval_expr(
     Returns:
         The result of the evaluation.
     """
-    return camel_eval(node.value, namespace, tool_calls_chain, dependencies, eval_args)
+    return camel_eval(
+        node.value, namespace, tool_calls_chain, dependencies, eval_args
+    )
 
 
 def _eval_named_expr(
@@ -1925,7 +2062,9 @@ def _eval_named_expr(
     )
     match evaled_val_res:
         case result.Error():
-            return EvalResult(evaled_val_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                evaled_val_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             val = v
         case _:
@@ -2064,7 +2203,7 @@ def _make_error(
     )
 
 
-BinaryOp: TypeAlias = Callable[[camel_value.Value[Any]], camel_value.Value[Any]]
+type BinaryOp = Callable[[camel_value.Value[Any]], camel_value.Value[Any]]
 
 
 def is_bound(m: Callable[..., Any]) -> bool:
@@ -2136,9 +2275,13 @@ def _eval_bin_op_inner(
     # Check for operator methods
     if isinstance(left, camel_value.CaMeLClassInstance):
         operator_method_name = f"__{method_name}__"  # Operator method name
-        method_fn: camel_value.CaMeLCallable[Any] | None = left.attr(operator_method_name)  # type: ignore
+        method_fn: camel_value.CaMeLCallable[Any] | None = left.attr(
+            operator_method_name
+        )  # type: ignore
         right_operator_method_name = f"__r{method_name}__"
-        right_method_fn: camel_value.CaMeLCallable[Any] | None = left.attr(right_operator_method_name)  # type: ignore
+        right_method_fn: camel_value.CaMeLCallable[Any] | None = left.attr(
+            right_operator_method_name
+        )  # type: ignore
         try:
             if method_fn is not None:
                 # For `ValueAsWrapper` instances, the method might be bound to the
@@ -2222,7 +2365,9 @@ def _eval_bin_op(
     )
     match left_res:
         case result.Error():
-            return EvalResult(left_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                left_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             left = v
         case _:
@@ -2233,7 +2378,9 @@ def _eval_bin_op(
     )
     match right_res:
         case result.Error():
-            return EvalResult(right_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                right_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             right = v
         case _:
@@ -2276,13 +2423,15 @@ def _eval_bool_op(
                 camel_capabilities.Capabilities.default(), ()
             )
         case _:
-            raise NotImplementedError(f"Boolean operator {node.op} not supported.")
+            raise NotImplementedError(
+                f"Boolean operator {node.op} not supported."
+            )
     # Start with neutral element: True for AND, False for OR.
     r = neutral_element
 
     for v in node.values:
-        evaled_value_res, namespace, tool_calls_chain, dependencies = camel_eval(
-            v, namespace, tool_calls_chain, dependencies, eval_args
+        evaled_value_res, namespace, tool_calls_chain, dependencies = (
+            camel_eval(v, namespace, tool_calls_chain, dependencies, eval_args)
         )
         match evaled_value_res:
             case result.Error():
@@ -2305,7 +2454,9 @@ def _eval_bool_op(
         # for OR, then we continue. Otherwise we stop to preserve the
         # short-circuiting semantics.
         if r.truth().neq(neutral_element).raw:
-            return EvalResult(result.Ok(r), namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                result.Ok(r), namespace, tool_calls_chain, dependencies
+            )
     return EvalResult(result.Ok(r), namespace, tool_calls_chain, dependencies)
 
 
@@ -2327,15 +2478,33 @@ def cmp(
     cmp_res = left.cmp(right)
     match op:
         case ast.Lt():
-            b = camel_value.CaMeLTrue if cmp_res.raw < 0 else camel_value.CaMeLFalse
+            b = (
+                camel_value.CaMeLTrue
+                if cmp_res.raw < 0
+                else camel_value.CaMeLFalse
+            )
         case ast.LtE():
-            b = camel_value.CaMeLTrue if cmp_res.raw <= 0 else camel_value.CaMeLFalse
+            b = (
+                camel_value.CaMeLTrue
+                if cmp_res.raw <= 0
+                else camel_value.CaMeLFalse
+            )
         case ast.Gt():
-            b = camel_value.CaMeLTrue if cmp_res.raw > 0 else camel_value.CaMeLFalse
+            b = (
+                camel_value.CaMeLTrue
+                if cmp_res.raw > 0
+                else camel_value.CaMeLFalse
+            )
         case ast.GtE():
-            b = camel_value.CaMeLTrue if cmp_res.raw >= 0 else camel_value.CaMeLFalse
+            b = (
+                camel_value.CaMeLTrue
+                if cmp_res.raw >= 0
+                else camel_value.CaMeLFalse
+            )
         case _:
-            raise NotImplementedError(f"Comparison operator {op} not supported.")
+            raise NotImplementedError(
+                f"Comparison operator {op} not supported."
+            )
     # Explicitly add left and right as a dependency instead of `cmp_res`
     # to improve clarity.
     return b(camel_capabilities.Capabilities.camel(), (left, right))
@@ -2419,17 +2588,25 @@ def _eval_compare(
     )
     match left_res:
         case result.Error():
-            return EvalResult(left_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                left_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             left = v
         case _:
             raise ValueError("Invalid eval result type")
     right_res, namespace, tool_calls_chain, dependencies = camel_eval(
-        node.comparators[0], namespace, tool_calls_chain, dependencies, eval_args
+        node.comparators[0],
+        namespace,
+        tool_calls_chain,
+        dependencies,
+        eval_args,
     )
     match right_res:
         case result.Error():
-            return EvalResult(right_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                right_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             right = v
         case _:
@@ -2523,7 +2700,9 @@ def _eval_if(
     )
     match test_res:
         case result.Error():
-            return EvalResult(test_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                test_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             test = v
         case _:
@@ -2548,7 +2727,9 @@ def _eval_if(
     else:
         return EvalResult(
             result.Ok(
-                camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())
+                camel_value.CaMeLNone(
+                    camel_capabilities.Capabilities.default(), ()
+                )
             ),
             namespace,
             tool_calls_chain,
@@ -2562,7 +2743,9 @@ def _eval_if(
         return EvalResult(body_res, namespace, tool_calls_chain, dependencies)
 
     return EvalResult(
-        result.Ok(camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())),
+        result.Ok(
+            camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())
+        ),
         namespace,
         tool_calls_chain,
         dependencies,
@@ -2593,7 +2776,9 @@ def _eval_if_exp(
     )
     match test_res:
         case result.Error():
-            return EvalResult(test_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                test_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             test = v
         case _:
@@ -2610,7 +2795,11 @@ def _eval_if_exp(
         )
     else:
         body_res, namespace, tool_calls_chain, dependencies = camel_eval(
-            node.orelse, namespace, tool_calls_chain, inner_dependencies, eval_args
+            node.orelse,
+            namespace,
+            tool_calls_chain,
+            inner_dependencies,
+            eval_args,
         )
 
     dependencies = list(dependencies)
@@ -2620,7 +2809,9 @@ def _eval_if_exp(
         return EvalResult(body_res, namespace, tool_calls_chain, dependencies)
 
     return EvalResult(
-        result.Ok(body_res.value.new_with_dependencies(tuple(inner_dependencies))),
+        result.Ok(
+            body_res.value.new_with_dependencies(tuple(inner_dependencies))
+        ),
         namespace,
         tool_calls_chain,
         dependencies,
@@ -2668,13 +2859,17 @@ def _eval_for(
     )
     match iterable_res:
         case result.Error():
-            return EvalResult(iterable_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                iterable_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             iterable = v
         case _:
             raise ValueError("Invalid eval result type")
 
-    if not isinstance(iterable, camel_value.CaMeLIterable | camel_value.CaMeLMapping):
+    if not isinstance(
+        iterable, camel_value.CaMeLIterable | camel_value.CaMeLMapping
+    ):
         return EvalResult(
             result.Error(
                 CaMeLException(
@@ -2699,27 +2894,35 @@ def _eval_for(
             eval_args,
         )
         if isinstance(assign_res, result.Error):
-            return EvalResult(assign_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                assign_res, namespace, tool_calls_chain, dependencies
+            )
 
-        final_val_res, namespace, tool_calls_chain, dependencies = _eval_stmt_list(
-            node.body,
-            namespace,
-            tool_calls_chain,
-            # no need to add `elt` to the dependency, as whether the statement gets
-            # evaluated depends on the iterable overall, and not on `elt` directly.
-            # Of course if `elt` is used in the statement, this will be considered
-            # by the evaluation of the statement.
-            dependencies,
-            eval_args,
+        final_val_res, namespace, tool_calls_chain, dependencies = (
+            _eval_stmt_list(
+                node.body,
+                namespace,
+                tool_calls_chain,
+                # no need to add `elt` to the dependency, as whether the statement gets
+                # evaluated depends on the iterable overall, and not on `elt` directly.
+                # Of course if `elt` is used in the statement, this will be considered
+                # by the evaluation of the statement.
+                dependencies,
+                eval_args,
+            )
         )
         if isinstance(final_val_res, result.Error):
-            return EvalResult(final_val_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                final_val_res, namespace, tool_calls_chain, dependencies
+            )
 
     dependencies = list(dependencies)
     dependencies.remove(iterable)
 
     return EvalResult(
-        result.Ok(camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())),
+        result.Ok(
+            camel_value.CaMeLNone(camel_capabilities.Capabilities.default(), ())
+        ),
         namespace,
         tool_calls_chain,
         dependencies,
@@ -2755,7 +2958,9 @@ def _eval_stmt_list(
         )
         match val_res:
             case result.Error():
-                return EvalResult(val_res, namespace, tool_calls_chain, dependencies)
+                return EvalResult(
+                    val_res, namespace, tool_calls_chain, dependencies
+                )
             case result.Ok(v):
                 val = v
             case _:
@@ -2788,13 +2993,18 @@ def _eval_args(
     for arg in args:
         if not isinstance(arg, ast.Starred):
             # normal positional arg
-            evaled_arg_res, namespace, tool_calls_chain, dependencies = camel_eval(
-                arg, namespace, tool_calls_chain, dependencies, eval_args
+            evaled_arg_res, namespace, tool_calls_chain, dependencies = (
+                camel_eval(
+                    arg, namespace, tool_calls_chain, dependencies, eval_args
+                )
             )
             match evaled_arg_res:
                 case result.Error():
                     return EvalResult(
-                        evaled_arg_res, namespace, tool_calls_chain, dependencies
+                        evaled_arg_res,
+                        namespace,
+                        tool_calls_chain,
+                        dependencies,
                     )
                 case result.Ok(v):
                     evaled_arg = v
@@ -2803,13 +3013,22 @@ def _eval_args(
             evaled_args.append(evaled_arg)
         else:
             # starred iterable
-            evaled_arg_res, namespace, tool_calls_chain, dependencies = camel_eval(
-                arg.value, namespace, tool_calls_chain, dependencies, eval_args
+            evaled_arg_res, namespace, tool_calls_chain, dependencies = (
+                camel_eval(
+                    arg.value,
+                    namespace,
+                    tool_calls_chain,
+                    dependencies,
+                    eval_args,
+                )
             )
             match evaled_arg_res:
                 case result.Error():
                     return EvalResult(
-                        evaled_arg_res, namespace, tool_calls_chain, dependencies
+                        evaled_arg_res,
+                        namespace,
+                        tool_calls_chain,
+                        dependencies,
                     )
                 case result.Ok(v):
                     evaled_arg = v
@@ -2891,7 +3110,9 @@ def _eval_keywords(
                 return EvalResult(
                     result.Error(
                         CaMeLException(
-                            SyntaxError(f"keyword argument repeated: {arg.raw}"),
+                            SyntaxError(
+                                f"keyword argument repeated: {arg.raw}"
+                            ),
                             (node,),
                             (kwarg_value,),
                         )
@@ -2992,13 +3213,20 @@ def _eval_call(
     )
     match evaled_fn_res:
         case result.Error():
-            return EvalResult(evaled_fn_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                evaled_fn_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             evaled_fn = v
         case _:
             raise ValueError("Invalid eval result type")
     evaled_args_res, namespace, tool_calls_chain, dependencies = _eval_args(
-        node.args, evaled_fn, namespace, tool_calls_chain, dependencies, eval_args
+        node.args,
+        evaled_fn,
+        namespace,
+        tool_calls_chain,
+        dependencies,
+        eval_args,
     )
     match evaled_args_res:
         case result.Error():
@@ -3016,8 +3244,15 @@ def _eval_call(
             (evaled_fn.receiver(), *evaled_args.python_value)
         )
 
-    evaled_kwargs_res, namespace, tool_calls_chain, dependencies = _eval_keywords(
-        node, evaled_fn, namespace, tool_calls_chain, dependencies, eval_args
+    evaled_kwargs_res, namespace, tool_calls_chain, dependencies = (
+        _eval_keywords(
+            node,
+            evaled_fn,
+            namespace,
+            tool_calls_chain,
+            dependencies,
+            eval_args,
+        )
     )
     match evaled_kwargs_res:
         case result.Error():
@@ -3048,12 +3283,12 @@ def _eval_call(
         # make sure policy evaluation is constant time to prevent side-channels
         policy_check_result = eval_args.security_policy_engine.check_policy(
             evaled_fn.name().raw,
-            evaled_fn.make_args_by_keyword_preserve_values(evaled_args, evaled_kwargs),
+            evaled_fn.make_args_by_keyword_preserve_values(
+                evaled_args, evaled_kwargs
+            ),
             dependencies,
         )
-    except (
-        Exception
-    ) as e:  # pylint: disable=broad-except. # sometimes exceptions can be thrown when checking policies
+    except Exception as e:  # pylint: disable=broad-except. # sometimes exceptions can be thrown when checking policies
         return EvalResult(
             result.Error(CaMeLException(e, (node,), (evaled_fn,))),
             namespace,
@@ -3081,10 +3316,10 @@ def _eval_call(
         ]
 
     try:
-        ret_res, args_by_keyword = evaled_fn.call(evaled_args, evaled_kwargs, namespace)
-    except (
-        Exception
-    ) as e:  # pylint: disable=broad-except  # catch all exceptions to be able to return them to the P-LLM
+        ret_res, args_by_keyword = evaled_fn.call(
+            evaled_args, evaled_kwargs, namespace
+        )
+    except Exception as e:  # pylint: disable=broad-except  # catch all exceptions to be able to return them to the P-LLM
         if isinstance(e, library.NotEnoughInformationError):
             return EvalResult(
                 result.Error(
@@ -3093,7 +3328,9 @@ def _eval_call(
                         (node,),
                         (evaled_args, evaled_kwargs),
                         camel_capabilities.Capabilities(
-                            sources_set=frozenset({sources.Tool(evaled_fn.name().raw)}),
+                            sources_set=frozenset(
+                                {sources.Tool(evaled_fn.name().raw)}
+                            ),
                             readers_set=readers.Public(),
                         ),
                     )
@@ -3125,7 +3362,9 @@ def _eval_call(
                     (node,),
                     (evaled_fn, evaled_args, evaled_kwargs),
                     camel_capabilities.Capabilities(
-                        sources_set=frozenset({sources.Tool(evaled_fn.name().raw)}),
+                        sources_set=frozenset(
+                            {sources.Tool(evaled_fn.name().raw)}
+                        ),
                         readers_set=readers.Public(),
                     ),
                 )
@@ -3256,7 +3495,10 @@ def _get_defined_classes(
 def _parse_data_value_fields(
     valuebody: list[ast.stmt],
     namespace: camel_value.Namespace,
-) -> result.Ok[list[tuple[str, type[Any]]]] | result.Error[CaMeLException[Exception]]:
+) -> (
+    result.Ok[list[tuple[str, type[Any]]]]
+    | result.Error[CaMeLException[Exception]]
+):
     """Parses the fields of a data value class definition.
 
     Args:
@@ -3314,9 +3556,7 @@ def _parse_data_value_fields(
                 fields.append(
                     (
                         field_name,
-                        eval(
-                            field_type, None, _get_defined_classes(namespace)
-                        ),  # pylint: disable=eval-used
+                        eval(field_type, None, _get_defined_classes(namespace)),  # pylint: disable=eval-used
                     )
                 )
             except (AttributeError, NameError) as e:
@@ -3355,7 +3595,9 @@ def _eval_class_def(
     )
     match bases_eval_res:
         case result.Error():
-            return EvalResult(bases_eval_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                bases_eval_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             bases: camel_value.CaMeLTuple[camel_value.CaMeLClass[Any]] = v
         case _:
@@ -3367,7 +3609,9 @@ def _eval_class_def(
         return EvalResult(
             result.Error(
                 CaMeLException(
-                    SyntaxError("all class definitions must inherit from BaseModel."),
+                    SyntaxError(
+                        "all class definitions must inherit from BaseModel."
+                    ),
                     (node,),
                     (bases,),
                 )
@@ -3381,7 +3625,9 @@ def _eval_class_def(
     fields_res = _parse_data_value_fields(node.body, namespace)
     match fields_res:
         case result.Error():
-            return EvalResult(fields_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                fields_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             fields = v
         case _:
@@ -3396,9 +3642,9 @@ def _eval_class_def(
         )
         python_type = pydantic.dataclasses.dataclass(dataclass_python_type)
     else:
-        type_pydantic_fields: dict[str, tuple[type[Any], pydantic.fields.FieldInfo]] = {
-            k: (v, pydantic.Field()) for k, v in fields
-        }
+        type_pydantic_fields: dict[
+            str, tuple[type[Any], pydantic.fields.FieldInfo]
+        ] = {k: (v, pydantic.Field()) for k, v in fields}
         try:
             python_type = pydantic.create_model(
                 node.name,
@@ -3448,9 +3694,14 @@ def _eval_class_def(
         eval_args,
     )
     if isinstance(assign_res, result.Error):
-        return EvalResult(assign_res, new_namespace, new_tool_calls_chain, dependencies)
+        return EvalResult(
+            assign_res, new_namespace, new_tool_calls_chain, dependencies
+        )
     return EvalResult(
-        result.Ok(value_value), new_namespace, new_tool_calls_chain, dependencies
+        result.Ok(value_value),
+        new_namespace,
+        new_tool_calls_chain,
+        dependencies,
     )
 
 
@@ -3489,7 +3740,9 @@ def _eval_raise(
     )
     match exc_eval_res:
         case result.Error():
-            return EvalResult(exc_eval_res, namespace, tool_calls_chain, dependencies)
+            return EvalResult(
+                exc_eval_res, namespace, tool_calls_chain, dependencies
+            )
         case result.Ok(v):
             exc = v
         case _:
@@ -3528,7 +3781,9 @@ def _eval_function_def(
 ) -> EvalResult:
     """Evaluates a function definition."""
     return EvalResult(
-        _make_not_implemented_error(node, "Function definitions are not supported"),
+        _make_not_implemented_error(
+            node, "Function definitions are not supported"
+        ),
         namespace,
         tool_calls_chain,
         dependencies,
@@ -3566,7 +3821,9 @@ def camel_eval(
                 node, namespace, tool_calls_chain, dependencies, eval_args
             )
         case ast.Set():
-            return _eval_set(node, namespace, tool_calls_chain, dependencies, eval_args)
+            return _eval_set(
+                node, namespace, tool_calls_chain, dependencies, eval_args
+            )
         case ast.Dict():
             return _eval_dict(
                 node, namespace, tool_calls_chain, dependencies, eval_args
@@ -3647,13 +3904,17 @@ def camel_eval(
             )
         # Control flow
         case ast.If():
-            return _eval_if(node, namespace, tool_calls_chain, dependencies, eval_args)
+            return _eval_if(
+                node, namespace, tool_calls_chain, dependencies, eval_args
+            )
         case ast.IfExp():
             return _eval_if_exp(
                 node, namespace, tool_calls_chain, dependencies, eval_args
             )
         case ast.For():
-            return _eval_for(node, namespace, tool_calls_chain, dependencies, eval_args)
+            return _eval_for(
+                node, namespace, tool_calls_chain, dependencies, eval_args
+            )
         case ast.Call():
             return _eval_call(
                 node, namespace, tool_calls_chain, dependencies, eval_args
@@ -3678,7 +3939,9 @@ def camel_eval(
         case ast.Pass():
             return EvalResult(
                 result.Ok(
-                    camel_value.CaMeLNone(camel_capabilities.Capabilities.camel(), ())
+                    camel_value.CaMeLNone(
+                        camel_capabilities.Capabilities.camel(), ()
+                    )
                 ),
                 namespace,
                 tool_calls_chain,
@@ -3815,7 +4078,12 @@ def camel_eval(
                 dependencies,
             )
         # Async (not supported)
-        case ast.AsyncFor() | ast.AsyncWith() | ast.AsyncFunctionDef() | ast.Await():
+        case (
+            ast.AsyncFor()
+            | ast.AsyncWith()
+            | ast.AsyncFunctionDef()
+            | ast.Await()
+        ):
             return EvalResult(
                 _make_not_implemented_error(node, "Async is not supported."),
                 namespace,
@@ -3872,11 +4140,15 @@ def camel_eval(
                         dependencies,
                     )
                 if alias.asname is not None:
-                    namespace.variables[alias.asname] = namespace.variables[alias.name]
+                    namespace.variables[alias.asname] = namespace.variables[
+                        alias.name
+                    ]
                     del namespace.variables[alias.name]
             return EvalResult(
                 result.Ok(
-                    camel_value.CaMeLNone(camel_capabilities.Capabilities.camel(), ())
+                    camel_value.CaMeLNone(
+                        camel_capabilities.Capabilities.camel(), ()
+                    )
                 ),
                 namespace,
                 tool_calls_chain,
@@ -3977,5 +4249,7 @@ def parse_and_interpret_code(
             dependencies,
         )
     return EvalResult(
-        *camel_eval(parsed_code, namespace, tool_calls_chain, dependencies, eval_args)
+        *camel_eval(
+            parsed_code, namespace, tool_calls_chain, dependencies, eval_args
+        )
     )

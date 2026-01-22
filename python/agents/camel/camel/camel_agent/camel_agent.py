@@ -18,24 +18,27 @@ import asyncio
 import queue
 import re
 import threading
-from collections.abc import Iterator
-from typing import Any, AsyncGenerator, Callable, Optional
+from collections.abc import AsyncGenerator, Callable, Iterator
+from typing import Any, ClassVar, override
 
-import pydantic
 from google.adk import runners
-from google.adk.agents import base_agent, invocation_context, llm_agent, loop_agent
+from google.adk.agents import (
+    base_agent,
+    invocation_context,
+    llm_agent,
+    loop_agent,
+)
 from google.adk.events import event, event_actions
 from google.adk.models import base_llm
 from google.genai import types
+from pydantic import BaseModel, ConfigDict
 from pydantic.v1 import validators
-from typing_extensions import override
 
 from ..camel_library import function_types, result, security_policy
 from ..camel_library.capabilities import capabilities
 from ..camel_library.interpreter import camel_value, interpreter, library
 from . import prompts, utils
 
-BaseModel = pydantic.BaseModel
 InvocationContext = invocation_context.InvocationContext
 
 Event = event.Event
@@ -79,7 +82,9 @@ class QuarantinedLlmService(BaseModel):
     runner: runners.InMemoryRunner
     pattern: re.Pattern
 
-    model_config = {"arbitrary_types_allowed": True}
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        arbitrary_types_allowed=True
+    )
 
     def __init__(
         self,
@@ -119,7 +124,9 @@ class QuarantinedLlmService(BaseModel):
         )
 
         qllm_query = f"{query} \n\n output_schema: {output_schema}"
-        content = types.Content(role="user", parts=[types.Part(text=qllm_query)])
+        content = types.Content(
+            role="user", parts=[types.Part(text=qllm_query)]
+        )
 
         async for e in self.runner.run_async(
             user_id=qllm_session.user_id,  # Session object contains user_id
@@ -240,7 +247,9 @@ class QuarantinedLlmService(BaseModel):
             """
 
             if output_schema not in ["int", "str", "float", "bool"]:
-                raise ValueError(f"Unsupported output schema: `{output_schema}`")
+                raise ValueError(
+                    f"Unsupported output schema: `{output_schema}`"
+                )
 
             response_parts = []
 
@@ -268,7 +277,9 @@ class QuarantinedLlmService(BaseModel):
             elif output_schema == "bool":
                 return bool_validator(response_text)
             else:
-                raise ValueError(f"Unsupported output schema: `{output_schema}`")
+                raise ValueError(
+                    f"Unsupported output schema: `{output_schema}`"
+                )
 
         return query_ai_assistant
 
@@ -283,7 +294,9 @@ class CaMelInterpreterService(BaseModel):
     namespace: Namespace
     quarantined_llm_service: QuarantinedLlmService
 
-    model_config = {"arbitrary_types_allowed": True}
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        arbitrary_types_allowed=True
+    )
 
     def __init__(
         self,
@@ -297,7 +310,14 @@ class CaMelInterpreterService(BaseModel):
         )  # Manages interactions with the QLLM.
 
         classes_to_exclude: frozenset[str] = frozenset(
-            {"datetime", "timedelta", "date", "time", "NaiveDatetime", "timezone"}
+            {
+                "datetime",
+                "timedelta",
+                "date",
+                "time",
+                "NaiveDatetime",
+                "timezone",
+            }
         )
 
         camel_tools = tools[:]
@@ -376,7 +396,9 @@ class CaMelInterpreterService(BaseModel):
             case result.Error(error):
                 error_obj = error
             case result.Ok(v_obj):
-                final_eval_output_str = v_obj.raw if v_obj.raw is not None else ""
+                final_eval_output_str = (
+                    v_obj.raw if v_obj.raw is not None else ""
+                )
 
         combined_output = f"{printed_output}\n{final_eval_output_str}".strip()
         return (
@@ -393,29 +415,32 @@ class CaMeLInterpreter(BaseAgent):
 
     camel_interpreter_service: CaMelInterpreterService
 
-    model_config = {"arbitrary_types_allowed": True}
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        arbitrary_types_allowed=True
+    )
 
     def __init__(
         self,
         name: str,
         camel_interpreter_service: CaMelInterpreterService,
     ):
-        super().__init__(name=name, camel_interpreter_service=camel_interpreter_service)
+        super().__init__(
+            name=name, camel_interpreter_service=camel_interpreter_service
+        )
 
     @override
     async def _run_async_impl(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
-
         if "p_llm_code" not in ctx.session.state:
             # If the p_llm_code is not in the session state, then the PLLM agent did
             # not generate any code. This is an error and we should escalate.
             ctx.session.state.update(
-                dict(
-                    eval_result=(
+                {
+                    "eval_result": (
                         "ERROR: You did not generate any code. Please try again."
                     )
-                )
+                }
             )
             yield Event(
                 author=self.name,
@@ -442,8 +467,8 @@ class CaMeLInterpreter(BaseAgent):
             )
         )  # printed_output, ad_tool_calls, error, namespace, dependencies
 
-        ctx.session.state.update(dict(function_calls=ad_tool_calls))
-        ctx.session.state.update(dict(dependencies=dependencies))
+        ctx.session.state.update({"function_calls": ad_tool_calls})
+        ctx.session.state.update({"dependencies": dependencies})
 
         # 3. Add additional messages to the conversation based on the eval result.
         if error is not None:
@@ -451,7 +476,9 @@ class CaMeLInterpreter(BaseAgent):
                 error_reason = str(error.exception)
             else:
                 error_reason = str(error)
-            ctx.session.state.update(dict(eval_result=f"CODE ERROR: {error_reason}"))
+            ctx.session.state.update(
+                {"eval_result": f"CODE ERROR: {error_reason}"}
+            )
             yield Event(
                 author=self.name,
                 content=types.Content(
@@ -462,9 +489,9 @@ class CaMeLInterpreter(BaseAgent):
         else:
             # Stop the loop if the eval result is successful.
             # Get printed output from the eval result, and add it to the conversation.
-            ctx.session.state.update(dict(eval_result=printed_output))
+            ctx.session.state.update({"eval_result": printed_output})
             # Remove the p_llm_code upon success to subsequent prompts aren't impacted.
-            ctx.session.state.update(dict(p_llm_code=None))
+            ctx.session.state.update({"p_llm_code": None})
             yield Event(
                 author=self.name,
                 content=types.Content(
@@ -492,7 +519,9 @@ class CaMeLAgent(BaseAgent):
     pllm_agent: LlmAgent
     loop_agent: LoopAgent
 
-    model_config = {"arbitrary_types_allowed": True}
+    model_config: ClassVar[ConfigDict] = ConfigDict(
+        arbitrary_types_allowed=True
+    )
 
     def __init__(
         self,
@@ -500,10 +529,12 @@ class CaMeLAgent(BaseAgent):
         model: str | BaseLlm = "gemini-2.5-pro",
         description: str = "",
         instruction: str = "",
-        tools: Optional[list[Tool]] = None,
-        security_policy_engine: SecurityPolicyEngine = security_policy.NoSecurityPolicyEngine(),
+        tools: list[Tool] | None = None,
         eval_mode: DependenciesPropagationMode = DependenciesPropagationMode.NORMAL,
     ):
+        security_policy_engine: SecurityPolicyEngine = (
+            security_policy.NoSecurityPolicyEngine()
+        )
 
         camel_interpreter_service = CaMelInterpreterService(
             model=model,
@@ -560,9 +591,9 @@ class CaMeLAgent(BaseAgent):
                 yield e
             # Remove the PLLM code and interpreter evaluation result from the session state.
             if "eval_result" in ctx.session.state:
-                ctx.session.state.update(dict(eval_result=None))
+                ctx.session.state.update({"eval_result": None})
             if "p_llm_code" in ctx.session.state:
-                ctx.session.state.update(dict(p_llm_code=None))
+                ctx.session.state.update({"p_llm_code": None})
         except security_policy.SecurityPolicyDeniedError as e:
             yield Event(
                 author=self.name,
@@ -579,4 +610,6 @@ class CaMeLAgent(BaseAgent):
             )
         except Exception as e:
             print(f"CaMeL agent failed: {e}", end="\n")
+            ctx.session.state.update({"eval_result": None})
+            ctx.session.state.update({"p_llm_code": None})
             raise e

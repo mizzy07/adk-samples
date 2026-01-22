@@ -23,7 +23,7 @@ import textwrap
 import types
 import typing
 from collections.abc import Iterable
-from typing import Any, TypeAlias
+from typing import Any
 
 import pydantic
 import pydantic.fields
@@ -116,9 +116,7 @@ def _get_pydantic_model_code(
         type_annotation = _get_type_string(field.annotation)
         field_info = _extract_field_info_args(field)
         field_info_str = ", ".join(f"{k}={v}" for k, v in field_info.items())
-        field_code = (
-            f"{_INDENT}{field_name}: {type_annotation} = Field({field_info_str})"
-        )
+        field_code = f"{_INDENT}{field_name}: {type_annotation} = Field({field_info_str})"
 
         code_lines.append(field_code)
         _add_dependencies(field.annotation, dependencies)
@@ -144,7 +142,7 @@ def _get_enum_code(obj: type[enum.Enum]) -> str:
     return code
 
 
-TypesToRepresent: TypeAlias = pydantic.BaseModel | enum.Enum
+type TypesToRepresent = pydantic.BaseModel | enum.Enum
 
 
 def _get_code_and_dependencies(obj) -> tuple[str, set[type[TypesToRepresent]]]:
@@ -250,7 +248,8 @@ def get_pydantic_types_definitions(
             isinstance(r_type, type)
             and not isinstance(r_type, types.GenericAlias)
             and (
-                issubclass(r_type, pydantic.BaseModel) or issubclass(r_type, enum.Enum)
+                issubclass(r_type, pydantic.BaseModel)
+                or issubclass(r_type, enum.Enum)
             )
         ):
             model_name = r_type.__name__
@@ -261,7 +260,10 @@ def get_pydantic_types_definitions(
             if (
                 isinstance(arg, type)
                 and not isinstance(arg, types.GenericAlias)
-                and (issubclass(arg, pydantic.BaseModel) or issubclass(arg, enum.Enum))
+                and (
+                    issubclass(arg, pydantic.BaseModel)
+                    or issubclass(arg, enum.Enum)
+                )
             ):
                 definitions |= get_code_recursive(arg)
     return definitions
@@ -392,10 +394,11 @@ def generate_camel_system_prompt(
     """Generates a system prompt with the provided functions."""
     function_definitions = (function_to_python_definition(f) for f in functions)
 
-    pydantic_types_definitions = get_pydantic_types_definitions(functions).values()
+    pydantic_types_definitions = get_pydantic_types_definitions(
+        functions
+    ).values()
 
     if pydantic_types_definitions:
-
         types_note = f"""
 ### Available types
 

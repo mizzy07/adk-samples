@@ -15,7 +15,7 @@
 """Module containining definitions for data readers."""
 
 import dataclasses
-from typing import TypeAlias, TypeVar
+from typing import TypeVar
 
 
 @dataclasses.dataclass(frozen=True)
@@ -42,4 +42,4 @@ class Public:
 
 _T = TypeVar("_T")
 
-Readers: TypeAlias = frozenset[_T] | Public
+type Readers = frozenset[_T] | Public

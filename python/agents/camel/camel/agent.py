@@ -114,7 +114,7 @@ class TestSecurityPolicyEngine(SecurityPolicyEngine):
             return Denied("All arguments must be provided.")
 
         # Create a set of potential readers from the 'to' argument
-        potential_readers = set([to.raw])
+        potential_readers = {[to.raw]}
 
         # If the body can be read by the potential readers or is public,
         # then the email can be sent.

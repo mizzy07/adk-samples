@@ -14,8 +14,8 @@
 
 """Pydantic models used in CaMeL."""
 
-from collections.abc import Callable
-from typing import Any, Generic, Mapping, ParamSpec, TypeVar
+from collections.abc import Callable, Mapping
+from typing import Any, Generic, ParamSpec, TypeVar
 
 import pydantic
 

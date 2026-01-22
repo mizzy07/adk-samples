@@ -16,7 +16,6 @@
 
 import dataclasses
 import enum
-from typing import TypeAlias
 
 
 class SourceEnum(enum.Enum):
@@ -41,4 +40,4 @@ class Tool:
         return hash(self.tool_name) ^ hash(tuple(self.inner_sources))
 
 
-Source: TypeAlias = SourceEnum | Tool
+type Source = SourceEnum | Tool

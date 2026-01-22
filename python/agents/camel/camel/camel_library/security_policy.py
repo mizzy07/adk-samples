@@ -43,7 +43,6 @@ SecurityPolicyResult = Allowed | Denied
 
 
 class SecurityPolicy(typing.Protocol):
-
     def __call__(
         self,
         tool_name: str,
@@ -127,7 +126,9 @@ class SecurityPolicyEngine(typing.Protocol):
         for policy_name, policy in self.policies:
             if fnmatch.fnmatch(tool_name, policy_name):
                 return policy(tool_name, kwargs)
-        return Denied("No security policy matched for tool. Defaulting to denial.")
+        return Denied(
+            "No security policy matched for tool. Defaulting to denial."
+        )
 
 
 class NoSecurityPolicyEngine(SecurityPolicyEngine):

@@ -22,6 +22,9 @@ from ..camel_library import function_types
 
 FunctionCall = function_types.FunctionCall
 
+MAX_RESPONSE_LENGTH = 256
+MAX_RESULT_LENGTH = 1024
+
 
 def sanitized_part(part: types.Part) -> str:
     """Returns a sanitized string representation of expected response parts."""
@@ -34,8 +37,8 @@ def sanitized_part(part: types.Part) -> str:
     if part.function_response:
         response_string = str(part.function_response)
         return (
-            f"FunctionResponse({response_string[:256]}"
-            f"{'...' if len(response_string) > 256 else ''})"
+            f"FunctionResponse({response_string[:MAX_RESPONSE_LENGTH]}"
+            f"{'...' if len(response_string) > MAX_RESPONSE_LENGTH else ''})"
         )
     if part.executable_code:
         return f"ExecutableCode:\n```{part.executable_code.language}\n{part.executable_code.code}\n```"
@@ -45,8 +48,8 @@ def sanitized_part(part: types.Part) -> str:
             f" output={part.code_execution_result.output}"
         )
         return (
-            f"CodeExecutionResult({result_string[:1024]}"
-            f"{'...' if len(result_string) > 1024 else ''})"
+            f"CodeExecutionResult({result_string[:MAX_RESULT_LENGTH]}"
+            f"{'...' if len(result_string) > MAX_RESULT_LENGTH else ''})"
         )
     return ""
 

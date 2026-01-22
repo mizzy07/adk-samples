@@ -21,7 +21,6 @@ from . import capabilities, readers, sources
 
 
 class HasDependenciesAndCapabilities(Protocol):
-
     def get_dependencies(
         self, visited_objects: frozenset[int] = frozenset()
     ) -> tuple[tuple[camel_value.Value, ...], frozenset[int]]: ...
@@ -143,5 +142,6 @@ def is_trusted(
     """
     trusted_set = trusted_set or _TRUSTED_SET
     return all(
-        _source_is_trusted(source, trusted_set) for source in get_all_sources(value)[0]
+        _source_is_trusted(source, trusted_set)
+        for source in get_all_sources(value)[0]
     )
